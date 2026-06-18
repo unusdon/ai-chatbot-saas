@@ -35,7 +35,9 @@ Built to ground rule #1 of this org: real-world projects, enterprise-grade, plug
 | **M1 — Foundation** | ✅ shipped | Auth.js v5 (Credentials + Google), Drizzle schema, pgvector, Docker stack, marketing landing, dashboard shell, CI |
 | **M2A — Bot CRUD** | ✅ shipped | Create / list / edit / delete chatbots; per-bot embed snippet with rotatable `publicKey`; multi-tenant ownership boundary enforced + integration-tested |
 | **M2B — Document ingestion** | ✅ shipped | PDF upload to S3/MinIO (20 MB limit, magic-byte check), URL ingestion with SSRF guard (rejects loopback / RFC1918 / link-local / non-http(s) schemes), per-bot source list with live status |
-| **M2C — Worker** | 🚧 in progress | BullMQ worker: PDF/HTML extraction, chunking, OpenAI embeddings, status transitions |
+| **M2C — Worker** | ✅ shipped | BullMQ worker: PDF → text (pdf-parse), URL → article text (Readability), recursive chunker with overlap, batched OpenAI embeddings, idempotent retries, exponential backoff. Pipeline is end-to-end integration-tested with a stub extractor + embedder. |
+| **M3 — RAG chat** | planned | Streaming chat with citations, conversation history, per-chunk feedback |
+| **M4 — Embed widget** | planned | Shadow-DOM widget bundle, public chat API with rate limits |
 | **M3 — RAG chat** | planned | Streaming chat with citations, conversation history, per-chunk feedback |
 | **M4 — Embed widget** | planned | Shadow-DOM widget bundle, public chat API with rate limits, signed URLs |
 | **M5 — Multi-tenant ops** | planned | Per-bot analytics, usage limits, Stripe billing, admin panel |
@@ -111,6 +113,10 @@ npm run db:migrate
 
 # 5. Start the dev server
 npm run dev
+
+# 6. In a second terminal: start the ingest worker
+#    (consumes BullMQ jobs queued by the dashboard's upload + URL flows)
+npm run worker
 ```
 
 Open <http://localhost:3000>, click **Get started**, create an account, and you're in the dashboard.

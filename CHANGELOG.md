@@ -19,6 +19,19 @@ All notable changes to this project are documented in this file. Format follows
   `bots/<botId>/documents/<docId>.pdf`. Queue facade calls
   `queueIngestJob(documentId)` so M2C can drop in BullMQ without touching the
   ingest call-sites.
+- **Milestone 2C — Ingest worker.** Standalone `npm run worker` process
+  consuming the BullMQ `ingest` queue. Pipeline: load document, mark
+  `processing`, extract (PDF → pdf-parse, URL → Readability + JSDOM with a
+  belt-and-braces SSRF check on redirects + content-type guard + 5 MB cap),
+  recursive character chunker (~1000 chars, 150 overlap), batched OpenAI
+  embeddings (cap on inputs-per-call + tokens-per-call so we stay under TPM
+  limits), insert chunks transactionally, mark `ready`. Retries 5× with
+  exponential backoff; failure path persists the error on the document row.
+  Idempotent: prior chunks for the same document are deleted before insert
+  so a retry doesn't double-write. Extractor + embeddings client are both
+  swappable (`_setExtractor`, `_setEmbeddingsClient`) for tests. End-to-end
+  integration test covers the full pipeline against real Postgres + real
+  MinIO with stub extractor + stub embedder.
 - Sidebar nav links Overview ↔ Chatbots.
 - CI workflow now runs the integration suite (`RUN_INTEGRATION_TESTS=1`) against
   the pgvector service container.

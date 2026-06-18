@@ -11,6 +11,14 @@ All notable changes to this project are documented in this file. Format follows
   dashboard. Each bot has a rotatable `publicKey` rendered as a copy-able embed
   snippet. Server actions enforce ownership; multi-tenant isolation is
   integration-tested against a live Postgres.
+- **Milestone 2B — Document ingestion.** Per-bot Sources card with PDF upload
+  (Route Handler, 20 MB limit, `%PDF-` magic-byte check) and URL ingestion
+  (server action with SSRF guard that rejects loopback / RFC1918 / link-local
+  hosts and non-http(s) schemes). Documents persist in Postgres with pending /
+  processing / ready / failed status, original PDFs persist in S3/MinIO under
+  `bots/<botId>/documents/<docId>.pdf`. Queue facade calls
+  `queueIngestJob(documentId)` so M2C can drop in BullMQ without touching the
+  ingest call-sites.
 - Sidebar nav links Overview ↔ Chatbots.
 - CI workflow now runs the integration suite (`RUN_INTEGRATION_TESTS=1`) against
   the pgvector service container.

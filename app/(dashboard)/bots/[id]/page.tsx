@@ -5,10 +5,12 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { getBotForUser } from '@/lib/server/bots';
+import { listDocumentsForBot } from '@/lib/server/documents';
 import { requireAuth } from '@/lib/server/require-auth';
 
 import { BotForm } from '../bot-form';
 import { DangerZone } from './danger-zone';
+import { DocumentsCard } from './documents-card';
 import { EmbedSnippet } from './embed-snippet';
 
 export const dynamic = 'force-dynamic';
@@ -25,6 +27,8 @@ export default async function BotDetailPage({ params }: { params: Promise<{ id: 
   const user = await requireAuth();
   const bot = await getBotForUser(user.id, id);
   if (!bot) notFound();
+
+  const docs = await listDocumentsForBot(user.id, bot.id);
 
   return (
     <div className="flex flex-col gap-6">
@@ -56,6 +60,8 @@ export default async function BotDetailPage({ params }: { params: Promise<{ id: 
           <BotForm mode="edit" bot={{ id: bot.id, name: bot.name, systemPrompt: bot.systemPrompt }} />
         </CardContent>
       </Card>
+
+      <DocumentsCard botId={bot.id} documents={docs} />
 
       <EmbedSnippet botId={bot.id} publicKey={bot.publicKey} />
 

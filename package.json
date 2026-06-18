@@ -1,0 +1,73 @@
+{
+  "name": "ai-chatbot-saas",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Multi-tenant RAG chatbot SaaS — upload PDFs/URLs, get an embeddable AI support widget trained on your content.",
+  "license": "MIT",
+  "homepage": "https://github.com/cyberunite/ai-chatbot-saas",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cyberunite/ai-chatbot-saas.git"
+  },
+  "bugs": {
+    "url": "https://github.com/cyberunite/ai-chatbot-saas/issues"
+  },
+  "author": {
+    "name": "Cyberunite",
+    "email": "info@cyberunite.com",
+    "url": "https://cyberunite.com"
+  },
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "typecheck": "tsc --noEmit",
+    "lint": "next lint",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "tsx db/migrate.ts",
+    "db:studio": "drizzle-kit studio"
+  },
+  "dependencies": {
+    "@auth/drizzle-adapter": "^1.7.4",
+    "@radix-ui/react-label": "^2.1.0",
+    "@radix-ui/react-slot": "^1.1.0",
+    "bcryptjs": "^2.4.3",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "drizzle-orm": "^0.36.4",
+    "lucide-react": "^0.469.0",
+    "next": "^15.0.0",
+    "next-auth": "5.0.0-beta.25",
+    "next-themes": "^0.4.3",
+    "postgres": "^3.4.5",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "sonner": "^1.7.1",
+    "tailwind-merge": "^2.5.5",
+    "tailwindcss-animate": "^1.0.7",
+    "zod": "^3.23.0"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "@types/node": "^22.0.0",
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "@vitejs/plugin-react": "^4.3.4",
+    "autoprefixer": "^10.4.20",
+    "drizzle-kit": "^0.30.1",
+    "eslint": "^9.0.0",
+    "eslint-config-next": "^15.0.0",
+    "dotenv": "^16.4.7",
+    "postcss": "^8.4.49",
+    "tailwindcss": "^3.4.17",
+    "tsx": "^4.19.2",
+    "typescript": "^5.6.3",
+    "vitest": "^2.1.8"
+  },
+  "engines": {
+    "node": ">=22.0.0",
+    "npm": ">=10.0.0"
+  }
+}

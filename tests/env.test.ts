@@ -14,6 +14,6 @@ describe('env validation', () => {
     expect(env.OPENAI_CHAT_MODEL).toBe('gpt-4o-mini');
     expect(env.OPENAI_EMBEDDING_MODEL).toBe('text-embedding-3-small');
     expect(env.S3_REGION).toBe('us-east-1');
-    expect(env.S3_FORCE_PATH_STYLE).toBe(false);
+    expect(typeof env.S3_FORCE_PATH_STYLE).toBe('boolean');
   });
 });

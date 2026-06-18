@@ -33,7 +33,9 @@ Built to ground rule #1 of this org: real-world projects, enterprise-grade, plug
 | Milestone | Status | Scope |
 |---|---|---|
 | **M1 — Foundation** | ✅ shipped | Auth.js v5 (Credentials + Google), Drizzle schema, pgvector, Docker stack, marketing landing, dashboard shell, CI |
-| **M2 — Chatbots & ingestion** | 🚧 in progress | Bot CRUD, PDF/URL upload, BullMQ chunking + embedding worker, MinIO storage |
+| **M2A — Bot CRUD** | ✅ shipped | Create / list / edit / delete chatbots; per-bot embed snippet with rotatable `publicKey`; multi-tenant ownership boundary enforced + integration-tested |
+| **M2B — Document ingestion** | 🚧 in progress | PDF/URL upload, document list per bot, MinIO storage |
+| **M2C — Worker** | planned | BullMQ chunking + embedding worker |
 | **M3 — RAG chat** | planned | Streaming chat with citations, conversation history, per-chunk feedback |
 | **M4 — Embed widget** | planned | Shadow-DOM widget bundle, public chat API with rate limits, signed URLs |
 | **M5 — Multi-tenant ops** | planned | Per-bot analytics, usage limits, Stripe billing, admin panel |

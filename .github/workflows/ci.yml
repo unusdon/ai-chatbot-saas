@@ -60,7 +60,10 @@ jobs:
       - name: Run migrations
         run: npm run db:migrate
 
-      - name: Test
+      - name: Test (unit + integration)
+        env:
+          RUN_INTEGRATION_TESTS: '1'
+          REAL_DATABASE_URL: postgres://chatbot:chatbot_ci_password@localhost:5432/chatbot
         run: npm run test
 
       - name: Build

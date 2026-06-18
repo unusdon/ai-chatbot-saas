@@ -3,13 +3,17 @@ import Link from 'next/link';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { auth } from '@/lib/auth';
+import { listBotsForUser } from '@/lib/server/bots';
+import { requireAuth } from '@/lib/server/require-auth';
 
 export const metadata = { title: 'Dashboard' };
+export const dynamic = 'force-dynamic';
 
 export default async function DashboardPage() {
-  const session = await auth();
-  const displayName = session?.user?.name?.split(' ')[0] ?? 'there';
+  const user = await requireAuth();
+  const displayName = user.name?.split(' ')[0] ?? 'there';
+  const bots = await listBotsForUser(user.id);
+  const isEmpty = bots.length === 0;
 
   return (
     <div className="flex flex-col gap-8">
@@ -17,40 +21,40 @@ export default async function DashboardPage() {
         <div>
           <h1 className="text-3xl font-bold">Welcome, {displayName}</h1>
           <p className="text-muted-foreground">
-            You haven&apos;t built any chatbots yet. Create your first one to get started.
+            {isEmpty
+              ? "You haven't built any chatbots yet. Create your first one to get started."
+              : `You have ${bots.length} chatbot${bots.length === 1 ? '' : 's'}.`}
           </p>
         </div>
-        <Button disabled title="Bot creation ships in Milestone 2">
-          <Plus className="mr-2 h-4 w-4" /> New chatbot
+        <Button asChild>
+          <Link href="/bots/new">
+            <Plus className="mr-2 h-4 w-4" /> New chatbot
+          </Link>
         </Button>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3">
-        <Stat icon={<Bot className="h-4 w-4" />} label="Chatbots" value="0" />
+        <Stat icon={<Bot className="h-4 w-4" />} label="Chatbots" value={String(bots.length)} />
         <Stat icon={<FileText className="h-4 w-4" />} label="Documents" value="0" />
         <Stat icon={<MessageSquare className="h-4 w-4" />} label="Conversations" value="0" />
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>What&apos;s next</CardTitle>
+          <CardTitle>{isEmpty ? "What's next" : 'Your chatbots'}</CardTitle>
           <CardDescription>
-            Milestone 1 ships auth and the dashboard shell. The next milestones add bot creation,
-            document ingestion, RAG chat, and the embed widget.
+            {isEmpty
+              ? 'Create a chatbot, upload your content, then embed the widget on any site.'
+              : 'Jump back into a chatbot or create another.'}
           </CardDescription>
         </CardHeader>
-        <CardContent className="flex gap-3">
+        <CardContent className="flex flex-wrap gap-3">
+          <Button asChild>
+            <Link href="/bots">{isEmpty ? 'Create a chatbot' : 'View all chatbots'}</Link>
+          </Button>
           <Button asChild variant="outline">
             <Link href="https://github.com/cyberunite/ai-chatbot-saas#roadmap" target="_blank">
               View roadmap
-            </Link>
-          </Button>
-          <Button asChild variant="outline">
-            <Link
-              href="https://github.com/cyberunite/ai-chatbot-saas/blob/main/CONTRIBUTING.md"
-              target="_blank"
-            >
-              Contribute
             </Link>
           </Button>
         </CardContent>

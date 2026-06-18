@@ -18,3 +18,7 @@ e.S3_BUCKET = e.S3_BUCKET ?? 'chatbot-documents';
 e.S3_ACCESS_KEY_ID = e.S3_ACCESS_KEY_ID ?? 'minioadmin';
 e.S3_SECRET_ACCESS_KEY = e.S3_SECRET_ACCESS_KEY ?? 'minioadmin';
 e.S3_FORCE_PATH_STYLE = e.S3_FORCE_PATH_STYLE ?? 'true';
+
+// Redis is only required by integration tests that hit the rate limiter +
+// BullMQ worker pickup. Default to docker compose's redis.
+e.REDIS_URL = e.REDIS_URL ?? 'redis://localhost:6379';

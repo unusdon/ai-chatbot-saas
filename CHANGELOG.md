@@ -19,6 +19,22 @@ All notable changes to this project are documented in this file. Format follows
   `bots/<botId>/documents/<docId>.pdf`. Queue facade calls
   `queueIngestJob(documentId)` so M2C can drop in BullMQ without touching the
   ingest call-sites.
+- **Milestone 4 — Embed widget.** Phase 1 complete.
+    - `widget/` — separate Vite library build (no React; framework-free
+      vanilla TS) producing `public/widget.js` (~7.4 KB / ~3.2 KB gz).
+    - Shadow DOM chat panel + floating action button so host-site CSS can't
+      conflict. Streaming SSE consumption mirrors the dashboard playground.
+    - Configurable via script-tag `data-*` attrs: `data-bot-key` (required),
+      `data-title`, `data-greeting`, `data-accent`, `data-api-base`.
+    - `app/api/widget/chat/route.ts` — public POST endpoint keyed by
+      `publicKey`, CORS open + OPTIONS preflight, end-user identity via
+      `aichatbot_eu_<botId>` cookie, per-bot rolling conversation.
+    - `lib/server/rate-limit.ts` — Redis-backed fixed-window counter (INCR +
+      EXPIRE). Per-key cap of 30 req/min, per-IP cap of 20 req/min. Fails
+      open on Redis errors — chat-down beats chat-unmetered during an outage.
+    - Tests: +2 integration tests for the rate limiter against real Redis.
+    - `npm run build` now runs `widget:build` then `next build` so the
+      bundle is always fresh.
 - **Milestone 3 — RAG chat.** End-to-end retrieval-augmented chat for the
   dashboard playground:
     - `lib/server/retrieval.ts` — embed query, cosine-distance search against

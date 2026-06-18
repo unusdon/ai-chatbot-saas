@@ -37,7 +37,9 @@ Built to ground rule #1 of this org: real-world projects, enterprise-grade, plug
 | **M2B — Document ingestion** | ✅ shipped | PDF upload to S3/MinIO (20 MB limit, magic-byte check), URL ingestion with SSRF guard (rejects loopback / RFC1918 / link-local / non-http(s) schemes), per-bot source list with live status |
 | **M2C — Worker** | ✅ shipped | BullMQ worker: PDF → text (pdf-parse), URL → article text (Readability), recursive chunker with overlap, batched OpenAI embeddings, idempotent retries, exponential backoff. Pipeline is end-to-end integration-tested with a stub extractor + embedder. |
 | **M3 — RAG chat** | ✅ shipped | Streaming SSE chat endpoint, pgvector HNSW retrieval (top-K + min-similarity filter), prompt assembly with numbered citations, conversation persistence (per-user rolling history per bot), playground UI with citation chips |
-| **M4 — Embed widget** | planned | Shadow-DOM widget bundle, public chat API with rate limits, signed URLs |
+| **M4 — Embed widget** | ✅ shipped | Vite-built `widget.js` (7.4 KB / 3.2 KB gz), Shadow-DOM chat panel + FAB, public `POST /api/widget/chat` keyed by `publicKey`, CORS open + OPTIONS preflight, Redis-backed per-key + per-IP rate limits (fail-open on Redis outage), stable end-user cookie |
+
+**Phase 1 status: complete.** Self-hosting customers can sign up → create a bot → upload docs → embed the widget snippet on any external site → end-users chat with answers grounded in the customer's sources.
 | **M3 — RAG chat** | planned | Streaming chat with citations, conversation history, per-chunk feedback |
 | **M4 — Embed widget** | planned | Shadow-DOM widget bundle, public chat API with rate limits, signed URLs |
 | **M5 — Multi-tenant ops** | planned | Per-bot analytics, usage limits, Stripe billing, admin panel |
@@ -128,6 +130,42 @@ npm run typecheck   # tsc --noEmit
 npm run lint        # next lint
 npm run test        # vitest
 ```
+
+## Embedding the widget on any site
+
+Once a chatbot is `ready` (sources ingested) and your app is deployed, copy
+the snippet shown on the bot detail page and drop it into the `<head>` of any
+website:
+
+```html
+<script
+  src="https://your-app.com/widget.js"
+  data-bot-key="bot_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+  data-title="Ask Acme"
+  data-accent="#7c3aed"
+  defer
+></script>
+```
+
+The widget renders a floating chat button in the bottom-right of the host
+page. Everything is scoped inside a Shadow DOM so the host site's CSS can't
+bleed in, and our CSS can't escape. Total bundle size: **~3.2 KB gzipped**.
+
+Optional `data-*` attributes:
+
+| Attribute | Default | Purpose |
+|---|---|---|
+| `data-title` | "Ask the bot" | Header text inside the chat panel. |
+| `data-greeting` | "Hi! Ask me anything…" | First-message placeholder. |
+| `data-accent` | `#111827` | Primary color (header bg, FAB bg, user bubble). |
+| `data-api-base` | script's origin | Override if you're serving the widget from a CDN but hitting a different API host. |
+
+End-users get a per-bot cookie (`aichatbot_eu_<botId>`) so their conversation
+persists across page loads. The endpoint is rate-limited to **30 messages /
+minute / publicKey** and **20 messages / minute / IP**, backed by Redis. When
+Redis is unreachable the limiter fails open — preferring a brief metered
+window of unlimited chat to taking the widget offline for every embedding
+site.
 
 ## Configuration
 

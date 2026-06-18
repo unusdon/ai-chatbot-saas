@@ -30,8 +30,9 @@ export function EmbedSnippet({ botId, publicKey }: { botId: string; publicKey: s
       <CardHeader>
         <CardTitle>Embed snippet</CardTitle>
         <CardDescription>
-          Paste this into the {'<'}head{'>'} of any site to render the chat widget. The widget ships in
-          Milestone 4 — your public key is reserved now so links you paste today keep working.
+          Paste this into the {'<'}head{'>'} of any site. The widget injects a Shadow-DOM chat panel
+          so it can&apos;t conflict with your CSS. End-users get a stable identity via cookie so their
+          conversation persists across visits.
         </CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-3">

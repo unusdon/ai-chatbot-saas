@@ -46,9 +46,14 @@ export default async function BotDetailPage({ params }: { params: Promise<{ id: 
             {bot.updatedAt.toLocaleDateString()}
           </p>
         </div>
-        <Badge variant={bot.isActive ? 'success' : 'secondary'}>
-          {bot.isActive ? 'Active' : 'Paused'}
-        </Badge>
+        <div className="flex items-center gap-3">
+          <Badge variant={bot.isActive ? 'success' : 'secondary'}>
+            {bot.isActive ? 'Active' : 'Paused'}
+          </Badge>
+          <Button asChild>
+            <Link href={`/bots/${bot.id}/chat`}>Open playground</Link>
+          </Button>
+        </div>
       </div>
 
       <Card>

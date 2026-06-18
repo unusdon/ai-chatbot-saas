@@ -19,6 +19,23 @@ All notable changes to this project are documented in this file. Format follows
   `bots/<botId>/documents/<docId>.pdf`. Queue facade calls
   `queueIngestJob(documentId)` so M2C can drop in BullMQ without touching the
   ingest call-sites.
+- **Milestone 3 — RAG chat.** End-to-end retrieval-augmented chat for the
+  dashboard playground:
+    - `lib/server/retrieval.ts` — embed query, cosine-distance search against
+      `chunk.embedding` (uses the HNSW index), drops chunks below a
+      configurable similarity floor.
+    - `lib/server/chat.ts` — assemble system prompt + numbered context block +
+      explicit "use only the context" instruction, stream completion via the
+      OpenAI client (swappable via `_setChatClient` for tests).
+    - `lib/server/conversations.ts` — per-(user, bot) rolling conversation,
+      ownership-enforced, persists user + assistant messages with citations.
+    - `app/api/bots/[id]/chat/route.ts` — SSE endpoint emitting `token`,
+      `citations`, `done`, `error` events.
+    - `app/(dashboard)/bots/[id]/chat/` — playground page with streamed
+      bubble rendering, citation chips (linked to source URL when available),
+      shift+enter for newlines, clear-conversation action.
+  Integration test exercises the prompt-assembly path against real Postgres
+  with stubbed embedder + chat client so we don't burn OpenAI tokens in CI.
 - **Milestone 2C — Ingest worker.** Standalone `npm run worker` process
   consuming the BullMQ `ingest` queue. Pipeline: load document, mark
   `processing`, extract (PDF → pdf-parse, URL → Readability + JSDOM with a

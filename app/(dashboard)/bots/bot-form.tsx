@@ -1,9 +1,9 @@
 'use client';
 
-import { useActionState } from 'react';
+import { Loader2, Save, Sparkles } from 'lucide-react';
+import { useActionState, useEffect } from 'react';
 import { useFormStatus } from 'react-dom';
 import { toast } from 'sonner';
-import { useEffect } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -28,26 +28,29 @@ export function BotForm(props: Props) {
   }, [state]);
 
   return (
-    <form action={formAction} className="flex flex-col gap-5">
+    <form action={formAction} className="space-y-5">
       {props.mode === 'edit' ? <input type="hidden" name="id" value={props.bot.id} /> : null}
 
-      <div className="flex flex-col gap-1.5">
+      <div className="space-y-1.5">
         <Label htmlFor="name">Name</Label>
         <Input
           id="name"
           name="name"
           required
           maxLength={120}
+          autoFocus={props.mode === 'create'}
           defaultValue={props.mode === 'edit' ? props.bot.name : ''}
           placeholder="e.g. Acme Help Center"
           aria-invalid={state.status === 'error' && state.field === 'name'}
         />
         {state.status === 'error' && state.field === 'name' ? (
           <p className="text-sm text-destructive">{state.message}</p>
-        ) : null}
+        ) : (
+          <p className="text-xs text-muted-foreground">Shown in the embed widget header and analytics.</p>
+        )}
       </div>
 
-      <div className="flex flex-col gap-1.5">
+      <div className="space-y-1.5">
         <Label htmlFor="systemPrompt">System prompt</Label>
         <Textarea
           id="systemPrompt"
@@ -55,14 +58,14 @@ export function BotForm(props: Props) {
           rows={6}
           maxLength={8000}
           defaultValue={props.mode === 'edit' ? props.bot.systemPrompt : ''}
-          placeholder="You are a helpful assistant for Acme. Answer using only the provided context…"
+          placeholder="You are a helpful assistant for Acme. Answer only from the provided context…"
           aria-invalid={state.status === 'error' && state.field === 'systemPrompt'}
         />
         {state.status === 'error' && state.field === 'systemPrompt' ? (
           <p className="text-sm text-destructive">{state.message}</p>
         ) : (
-          <p className="text-xs text-muted-foreground">
-            Leave blank to use the default RAG-friendly prompt.
+          <p className="inline-flex items-center gap-1 text-xs text-muted-foreground">
+            <Sparkles className="h-3 w-3" /> Leave blank to use the default RAG-friendly prompt.
           </p>
         )}
       </div>
@@ -74,13 +77,10 @@ export function BotForm(props: Props) {
 
 function SubmitButton({ mode }: { mode: 'create' | 'edit' }) {
   const { pending } = useFormStatus();
-  const labels = {
-    create: { idle: 'Create chatbot', pending: 'Creating…' },
-    edit: { idle: 'Save changes', pending: 'Saving…' },
-  } as const;
   return (
-    <Button type="submit" disabled={pending}>
-      {pending ? labels[mode].pending : labels[mode].idle}
+    <Button type="submit" disabled={pending} size="lg" className="w-full sm:w-auto">
+      {pending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+      {mode === 'create' ? (pending ? 'Creating…' : 'Create chatbot') : (pending ? 'Saving…' : 'Save changes')}
     </Button>
   );
 }

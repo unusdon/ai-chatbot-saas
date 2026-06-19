@@ -1,3 +1,4 @@
+import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 
 import { Button } from '@/components/ui/button';
@@ -9,19 +10,23 @@ export const metadata = { title: 'New chatbot' };
 
 export default function NewBotPage() {
   return (
-    <div className="mx-auto flex max-w-2xl flex-col gap-6">
-      <div>
-        <Button asChild variant="ghost" size="sm">
-          <Link href="/bots">← All chatbots</Link>
-        </Button>
+    <div className="mx-auto max-w-2xl space-y-6">
+      <Button asChild variant="ghost" size="sm" className="text-muted-foreground">
+        <Link href="/bots">
+          <ArrowLeft className="h-4 w-4" /> All chatbots
+        </Link>
+      </Button>
+      <div className="space-y-1.5">
+        <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">New chatbot</h1>
+        <p className="text-sm text-muted-foreground">
+          Pick a clear name. You can change the system prompt and upload sources after it&apos;s
+          created.
+        </p>
       </div>
       <Card>
         <CardHeader>
-          <CardTitle>New chatbot</CardTitle>
-          <CardDescription>
-            Give your bot a clear name. You can change the system prompt and upload sources after it&apos;s
-            created.
-          </CardDescription>
+          <CardTitle>Details</CardTitle>
+          <CardDescription>Anything you can change later, you can change later.</CardDescription>
         </CardHeader>
         <CardContent>
           <BotForm mode="create" />

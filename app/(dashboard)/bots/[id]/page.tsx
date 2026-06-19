@@ -50,6 +50,9 @@ export default async function BotDetailPage({ params }: { params: Promise<{ id: 
           <Badge variant={bot.isActive ? 'success' : 'secondary'}>
             {bot.isActive ? 'Active' : 'Paused'}
           </Badge>
+          <Button asChild variant="outline">
+            <Link href={`/bots/${bot.id}/analytics`}>Analytics</Link>
+          </Button>
           <Button asChild>
             <Link href={`/bots/${bot.id}/chat`}>Open playground</Link>
           </Button>

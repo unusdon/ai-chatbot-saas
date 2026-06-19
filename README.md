@@ -40,6 +40,14 @@ Built to ground rule #1 of this org: real-world projects, enterprise-grade, plug
 | **M4 — Embed widget** | ✅ shipped | Vite-built `widget.js` (7.4 KB / 3.2 KB gz), Shadow-DOM chat panel + FAB, public `POST /api/widget/chat` keyed by `publicKey`, CORS open + OPTIONS preflight, Redis-backed per-key + per-IP rate limits (fail-open on Redis outage), stable end-user cookie |
 
 **Phase 1 status: complete.** Self-hosting customers can sign up → create a bot → upload docs → embed the widget snippet on any external site → end-users chat with answers grounded in the customer's sources.
+
+### Phase 2 — admin features (in progress)
+
+| Milestone | Status | Scope |
+|---|---|---|
+| **P5 — Per-bot analytics** | ✅ shipped | Stats (messages, conversations, avg latency, tokens), 14-day SVG bar chart, top questions, content-gap surface (questions with zero citations → highest-ROI sources to add next) |
+| **P6 — Plans + usage limits** | planned | Per-plan caps (messages/month, bots, document bytes), enforced server-side |
+| **P7 — Stripe billing** | planned | Hosted checkout, webhook handler, customer portal |
 | **M3 — RAG chat** | planned | Streaming chat with citations, conversation history, per-chunk feedback |
 | **M4 — Embed widget** | planned | Shadow-DOM widget bundle, public chat API with rate limits, signed URLs |
 | **M5 — Multi-tenant ops** | planned | Per-bot analytics, usage limits, Stripe billing, admin panel |

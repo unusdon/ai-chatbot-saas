@@ -19,6 +19,19 @@ All notable changes to this project are documented in this file. Format follows
   `bots/<botId>/documents/<docId>.pdf`. Queue facade calls
   `queueIngestJob(documentId)` so M2C can drop in BullMQ without touching the
   ingest call-sites.
+- **Phase 2 / Milestone 5 — Per-bot analytics.**
+    - `lib/server/analytics.ts` with ownership-checked aggregations:
+      `getBotStats` (messages by role, conversations, avg latency, tokens),
+      `getDailyMessageCounts` with `generate_series` so days with zero
+      activity still appear, `getTopQueries` (`GROUP BY content`), and
+      `getContentGaps` — assistant messages with empty/null `citations`
+      joined to the immediately-preceding user question via a subquery
+      ordered by `(createdAt, id)` so timestamp ties don't lose ordering.
+    - `app/(dashboard)/bots/[id]/analytics/page.tsx` with 4 stat cards,
+      a pure-SVG bar chart (no chart-lib dependency), Top Questions list,
+      and a Content Gaps card flagging the highest-ROI sources to add.
+    - Bot detail page gains an Analytics CTA next to the playground link.
+    - +5 integration tests covering every aggregation against real Postgres.
 - **Milestone 4 — Embed widget.** Phase 1 complete.
     - `widget/` — separate Vite library build (no React; framework-free
       vanilla TS) producing `public/widget.js` (~7.4 KB / ~3.2 KB gz).

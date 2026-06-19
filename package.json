@@ -4,13 +4,13 @@
   "version": "0.1.0",
   "description": "Open-source multi-tenant RAG chatbot SaaS. Upload PDF/DOCX/XLSX/JSON/MD/URLs/sitemaps/Q&A, pick any LLM (OpenAI/Claude/Gemini/Deepseek/Ollama), deploy across embed widget + Telegram (private + groups) + WhatsApp Cloud API. Full conversation admin with promote-to-training.",
   "license": "MIT",
-  "homepage": "https://github.com/cyberunite/ai-chatbot-saas",
+  "homepage": "https://github.com/unusdon/ai-chatbot-saas",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/cyberunite/ai-chatbot-saas.git"
+    "url": "git+https://github.com/unusdon/ai-chatbot-saas.git"
   },
   "bugs": {
-    "url": "https://github.com/cyberunite/ai-chatbot-saas/issues"
+    "url": "https://github.com/unusdon/ai-chatbot-saas/issues"
   },
   "author": {
     "name": "Cyberunite",

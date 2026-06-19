@@ -58,7 +58,7 @@ export default async function DashboardPage() {
                 </Link>
               </Button>
               <Button asChild variant="outline">
-                <Link href="https://github.com/cyberunite/ai-chatbot-saas/blob/main/DEPLOY.md" target="_blank" rel="noreferrer">
+                <Link href="https://github.com/unusdon/ai-chatbot-saas/blob/main/DEPLOY.md" target="_blank" rel="noreferrer">
                   <BookOpen className="h-4 w-4" /> Read the deploy guide
                 </Link>
               </Button>

@@ -7,7 +7,7 @@ PRs and issues welcome.
 You need: Node 22+, Docker (or OrbStack), and an OpenAI API key.
 
 ```bash
-git clone https://github.com/cyberunite/ai-chatbot-saas.git
+git clone https://github.com/unusdon/ai-chatbot-saas.git
 cd ai-chatbot-saas
 
 cp .env.example .env

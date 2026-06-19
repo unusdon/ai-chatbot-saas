@@ -84,7 +84,7 @@ function init() {
         <button type="submit" aria-label="Send">→</button>
       </form>
       <footer class="ai-footer">
-        Powered by <a href="https://github.com/cyberunite/ai-chatbot-saas" target="_blank" rel="noreferrer">AI Chatbot SaaS</a>
+        Powered by <a href="https://github.com/unusdon/ai-chatbot-saas" target="_blank" rel="noreferrer">AI Chatbot SaaS</a>
       </footer>
     </section>
   `;

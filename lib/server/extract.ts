@@ -156,7 +156,7 @@ async function extractFromUrlImpl(url: string): Promise<Extracted> {
       signal: controller.signal,
       redirect: 'follow',
       headers: {
-        'user-agent': 'AIChatbotSaaS/1.0 (+https://github.com/cyberunite/ai-chatbot-saas)',
+        'user-agent': 'AIChatbotSaaS/1.0 (+https://github.com/unusdon/ai-chatbot-saas)',
         accept: 'text/html,application/xhtml+xml',
       },
     });

@@ -1,8 +1,8 @@
 blank_issues_enabled: false
 contact_links:
   - name: Discussions
-    url: https://github.com/cyberunite/ai-chatbot-saas/discussions
+    url: https://github.com/unusdon/ai-chatbot-saas/discussions
     about: Ask questions or share what you built with this platform.
   - name: Security disclosure
-    url: https://github.com/cyberunite/ai-chatbot-saas/blob/main/SECURITY.md
+    url: https://github.com/unusdon/ai-chatbot-saas/blob/main/SECURITY.md
     about: Report a vulnerability privately — do NOT use a public issue.

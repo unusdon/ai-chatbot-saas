@@ -18,7 +18,7 @@ export const SITE = {
     url: 'https://cyberunite.com',
     email: 'info@cyberunite.com',
   },
-  github: 'https://github.com/cyberunite/ai-chatbot-saas',
+  github: 'https://github.com/unusdon/ai-chatbot-saas',
   themeColor: { light: '#ffffff', dark: '#0a0a0a' },
   brandHsl: '221 83% 53%',
 } as const;

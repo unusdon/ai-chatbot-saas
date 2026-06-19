@@ -83,7 +83,7 @@ function SiteHeader({ signedIn }: { signedIn: boolean }) {
           <a href="#embed" className="rounded-md px-3 py-2 hover:bg-accent hover:text-foreground">Embed</a>
           <a href="#faq" className="rounded-md px-3 py-2 hover:bg-accent hover:text-foreground">FAQ</a>
           <Link
-            href="https://github.com/cyberunite/ai-chatbot-saas"
+            href="https://github.com/unusdon/ai-chatbot-saas"
             className="ml-1 inline-flex items-center gap-1.5 rounded-md px-3 py-2 hover:bg-accent hover:text-foreground"
             target="_blank"
             rel="noreferrer"
@@ -146,7 +146,7 @@ function Hero() {
               </Link>
             </Button>
             <Button asChild size="xl" variant="outline" className="w-full sm:w-auto">
-              <Link href="https://github.com/cyberunite/ai-chatbot-saas" target="_blank" rel="noreferrer">
+              <Link href="https://github.com/unusdon/ai-chatbot-saas" target="_blank" rel="noreferrer">
                 <Github className="h-4 w-4" /> View on GitHub
               </Link>
             </Button>
@@ -419,7 +419,7 @@ function CtaSection() {
             </Link>
           </Button>
           <Button asChild size="xl" variant="outline">
-            <Link href="https://github.com/cyberunite/ai-chatbot-saas" target="_blank" rel="noreferrer">
+            <Link href="https://github.com/unusdon/ai-chatbot-saas" target="_blank" rel="noreferrer">
               <Github className="h-4 w-4" /> Star on GitHub
             </Link>
           </Button>
@@ -455,10 +455,10 @@ function SiteFooter() {
           <FooterCol
             title="Resources"
             links={[
-              { label: 'GitHub', href: 'https://github.com/cyberunite/ai-chatbot-saas' },
-              { label: 'Deploy guide', href: 'https://github.com/cyberunite/ai-chatbot-saas/blob/main/DEPLOY.md' },
-              { label: 'Changelog', href: 'https://github.com/cyberunite/ai-chatbot-saas/blob/main/CHANGELOG.md' },
-              { label: 'Security', href: 'https://github.com/cyberunite/ai-chatbot-saas/blob/main/SECURITY.md' },
+              { label: 'GitHub', href: 'https://github.com/unusdon/ai-chatbot-saas' },
+              { label: 'Deploy guide', href: 'https://github.com/unusdon/ai-chatbot-saas/blob/main/DEPLOY.md' },
+              { label: 'Changelog', href: 'https://github.com/unusdon/ai-chatbot-saas/blob/main/CHANGELOG.md' },
+              { label: 'Security', href: 'https://github.com/unusdon/ai-chatbot-saas/blob/main/SECURITY.md' },
             ]}
           />
           <FooterCol

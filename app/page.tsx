@@ -1,3 +1,5 @@
+import type { Metadata } from 'next';
+import Link from 'next/link';
 import {
   ArrowRight,
   CheckCircle2,
@@ -10,13 +12,38 @@ import {
   Sparkles,
   Zap,
 } from 'lucide-react';
-import Link from 'next/link';
 
 import { Button } from '@/components/ui/button';
 import { auth } from '@/lib/auth';
+import { FAQS } from '@/lib/seo/faqs';
+import { PRIMARY_KEYWORDS, SITE, absoluteUrl } from '@/lib/seo/site';
+import { FaqJsonLd, SoftwareApplicationJsonLd } from '@/lib/seo/structured-data';
 
-export const metadata = {
-  title: 'AI Chatbot SaaS — train AI on your content in minutes',
+export const metadata: Metadata = {
+  title: 'AI chatbot SaaS — RAG chat platform with citations',
+  description: SITE.description,
+  keywords: PRIMARY_KEYWORDS,
+  alternates: { canonical: '/' },
+  openGraph: {
+    title: 'AI Chatbot SaaS — train AI on your content. Embed anywhere.',
+    description: SITE.description,
+    url: SITE.url,
+    type: 'website',
+    images: [
+      {
+        url: absoluteUrl('/opengraph-image'),
+        width: 1200,
+        height: 630,
+        alt: SITE.tagline,
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'AI Chatbot SaaS — train AI on your content',
+    description: SITE.tagline,
+    images: [absoluteUrl('/opengraph-image')],
+  },
 };
 
 export default async function LandingPage() {
@@ -24,6 +51,8 @@ export default async function LandingPage() {
 
   return (
     <main className="relative flex min-h-screen flex-col bg-background">
+      <SoftwareApplicationJsonLd />
+      <FaqJsonLd faqs={FAQS} />
       <SiteHeader signedIn={Boolean(session?.user)} />
       <Hero />
       <Trustbar />
@@ -313,32 +342,6 @@ function EmbedShowcase() {
 }
 
 function FaqSection() {
-  const faqs = [
-    {
-      q: 'Do I own the data and the source code?',
-      a: 'Yes. The repo is MIT-licensed. You self-host the full stack — every commit is in the repo, no vendor lock-in.',
-    },
-    {
-      q: 'What LLM does it use?',
-      a: 'OpenAI by default (gpt-4o-mini + text-embedding-3-small). Anthropic is pluggable via the LLM_PROVIDER env var.',
-    },
-    {
-      q: 'How does retrieval work?',
-      a: 'pgvector with an HNSW index on cosine distance. Top-K with a configurable similarity floor.',
-    },
-    {
-      q: 'Can I host it on Vercel?',
-      a: 'Yes for the app. The ingest worker needs a separate host (Railway, Render, Fly). See DEPLOY.md.',
-    },
-    {
-      q: 'Is the widget customizable?',
-      a: 'Via script-tag data-* attributes: title, greeting, accent color, API base. More themes in M9.',
-    },
-    {
-      q: 'Are there usage limits?',
-      a: 'Per-plan caps on bots, documents, storage, and monthly messages — enforced server-side and shown live on /account/usage.',
-    },
-  ];
   return (
     <section id="faq" className="border-t bg-surface-2">
       <div className="container py-20 sm:py-28">
@@ -346,9 +349,12 @@ function FaqSection() {
           <h2 className="text-balance text-3xl font-bold tracking-tight sm:text-4xl">
             Frequently asked questions
           </h2>
+          <p className="mt-4 text-pretty text-muted-foreground">
+            Everything new self-hosters want to know before they clone the repo.
+          </p>
         </div>
         <dl className="mx-auto mt-14 grid max-w-4xl gap-6 sm:grid-cols-2">
-          {faqs.map((f) => (
+          {FAQS.map((f) => (
             <div key={f.q} className="rounded-lg border bg-card p-6 shadow-soft">
               <dt className="text-base font-semibold">{f.q}</dt>
               <dd className="mt-2 text-sm leading-relaxed text-muted-foreground">{f.a}</dd>

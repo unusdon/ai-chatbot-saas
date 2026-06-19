@@ -1,9 +1,16 @@
+import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 
 import { SidebarContent } from '@/components/dashboard/sidebar-content';
 import { Topbar } from '@/components/dashboard/topbar';
 import { auth } from '@/lib/auth';
 import { getPlan } from '@/lib/server/plans';
+
+export const metadata: Metadata = {
+  // The entire dashboard is private. Even if a URL leaks, search engines
+  // shouldn't index it.
+  robots: { index: false, follow: false, nocache: true, noimageindex: true },
+};
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const session = await auth();

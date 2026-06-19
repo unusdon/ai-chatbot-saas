@@ -3,9 +3,12 @@ import Link from 'next/link';
 
 import { Button } from '@/components/ui/button';
 
-export const metadata = {
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
   title: 'Forgot password',
   description: 'Recover access to your AI Chatbot SaaS account.',
+  alternates: { canonical: '/forgot-password' },
 };
 
 export default function ForgotPasswordPage() {

@@ -1,5 +1,11 @@
+import type { Metadata } from 'next';
 import { CheckCircle2, Sparkles } from 'lucide-react';
 import Link from 'next/link';
+
+export const metadata: Metadata = {
+  // Auth flows shouldn't surface in search results.
+  robots: { index: false, follow: true, nocache: true },
+};
 
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
   return (

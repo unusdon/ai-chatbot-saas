@@ -2,9 +2,18 @@ import Link from 'next/link';
 
 import { SignupForm } from './signup-form';
 
-export const metadata = {
-  title: 'Sign up',
-  description: 'Create your AI Chatbot SaaS account.',
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Sign up — start free',
+  description:
+    'Create your AI Chatbot SaaS account. Free plan: 3 chatbots, 25 documents, 200 messages/month. No credit card required.',
+  alternates: { canonical: '/signup' },
+  openGraph: {
+    title: 'Sign up for AI Chatbot SaaS',
+    description: 'Start free. Train your first chatbot in under 10 minutes.',
+    type: 'website',
+  },
 };
 
 export default function SignupPage() {

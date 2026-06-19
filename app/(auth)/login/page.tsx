@@ -2,9 +2,12 @@ import Link from 'next/link';
 
 import { LoginForm } from './login-form';
 
-export const metadata = {
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
   title: 'Log in',
   description: 'Sign in to your AI Chatbot SaaS account.',
+  alternates: { canonical: '/login' },
 };
 
 export default async function LoginPage({

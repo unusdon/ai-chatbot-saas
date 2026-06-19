@@ -10,6 +10,7 @@ import {
   setConversationArchivedForUser,
   setConversationFlagForUser,
 } from '@/lib/server/conversations';
+import { promoteMessageToQa, unpromoteMessage } from '@/lib/server/promote';
 import { requireAuth } from '@/lib/server/require-auth';
 
 const IdInput = z.object({ conversationId: z.string().uuid() });
@@ -80,4 +81,64 @@ export async function setConversationArchivedAction(input: {
   if (!parsed.success) return;
   await setConversationArchivedForUser(user.id, parsed.data.conversationId, parsed.data.archived);
   revalidatePath(`/bots/${input.botId}/conversations`);
+}
+
+// ─── Promote-to-training ───────────────────────────────────────────────────
+
+const PromoteInput = z.object({
+  botId: z.string().uuid(),
+  conversationId: z.string().uuid(),
+  assistantMessageId: z.string().uuid(),
+  question: z.string().trim().min(1).max(500),
+  answer: z.string().trim().min(1).max(8000),
+});
+
+export async function promoteMessageAction(input: {
+  botId: string;
+  conversationId: string;
+  assistantMessageId: string;
+  question: string;
+  answer: string;
+}): Promise<{ ok: boolean; message: string }> {
+  const user = await requireAuth();
+  const parsed = PromoteInput.safeParse(input);
+  if (!parsed.success) {
+    return { ok: false, message: parsed.error.errors[0].message };
+  }
+  const result = await promoteMessageToQa({
+    userId: user.id,
+    botId: parsed.data.botId,
+    conversationId: parsed.data.conversationId,
+    assistantMessageId: parsed.data.assistantMessageId,
+    question: parsed.data.question,
+    answer: parsed.data.answer,
+  });
+  if (result.ok) {
+    revalidatePath(`/bots/${input.botId}/conversations/${input.conversationId}`);
+    revalidatePath(`/bots/${input.botId}/sources`);
+    return { ok: true, message: 'Saved as a Q&A source. Re-ingesting…' };
+  }
+  return { ok: false, message: result.reason };
+}
+
+const UnpromoteInput = z.object({
+  messageId: z.string().uuid(),
+  botId: z.string().uuid(),
+  conversationId: z.string().uuid(),
+});
+
+export async function unpromoteMessageAction(input: {
+  messageId: string;
+  botId: string;
+  conversationId: string;
+}): Promise<{ ok: boolean }> {
+  const user = await requireAuth();
+  const parsed = UnpromoteInput.safeParse(input);
+  if (!parsed.success) return { ok: false };
+  const removed = await unpromoteMessage(user.id, parsed.data.messageId);
+  if (removed) {
+    revalidatePath(`/bots/${input.botId}/conversations/${input.conversationId}`);
+    revalidatePath(`/bots/${input.botId}/sources`);
+  }
+  return { ok: removed };
 }

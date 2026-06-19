@@ -36,6 +36,13 @@
       "when": 1781846032079,
       "tag": "0004_add_conversation_metadata",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1781853529228,
+      "tag": "0005_add_message_promotion",
+      "breakpoints": true
     }
   ]
 }

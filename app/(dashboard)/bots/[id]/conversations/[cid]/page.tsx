@@ -1,6 +1,5 @@
 import {
   ArrowLeft,
-  Bot,
   Clock,
   Download,
   Flag,
@@ -20,6 +19,7 @@ import { requireAuth } from '@/lib/server/require-auth';
 
 import { ConversationActions } from './conversation-actions';
 import { DeleteConversationButton } from './delete-conversation-button';
+import { MessageBubble } from './message-bubble';
 
 export const dynamic = 'force-dynamic';
 
@@ -43,6 +43,19 @@ export default async function ConversationDetailPage({
   const { conversation, messages } = detail;
   const ua = parseUserAgent(conversation.userAgent);
   const duration = computeDuration(conversation.createdAt, conversation.lastMessageAt);
+
+  // Walk the transcript and map every assistant message to its immediately
+  // preceding user message so the "Add to training" button can pre-fill both
+  // sides of the Q&A pair.
+  const precedingMap = new Map<string, string>();
+  let lastUserContent: string | null = null;
+  for (const m of messages) {
+    if (m.role === 'user') {
+      lastUserContent = m.content;
+    } else if (m.role === 'assistant' && lastUserContent) {
+      precedingMap.set(m.id, lastUserContent);
+    }
+  }
 
   return (
     <div className="space-y-6">
@@ -81,13 +94,18 @@ export default async function ConversationDetailPage({
               </p>
             ) : (
               messages.map((m) => (
-                <Bubble
+                <MessageBubble
                   key={m.id}
+                  id={m.id}
                   role={m.role as 'user' | 'assistant'}
                   content={m.content}
                   createdAt={m.createdAt}
                   citations={(m.citations as Array<{ chunkId: string; score: number }>) ?? []}
                   latencyMs={m.latencyMs}
+                  precedingUserContent={precedingMap.get(m.id) ?? null}
+                  promotedDocumentId={m.promotedDocumentId}
+                  botId={bot.id}
+                  conversationId={conversation.id}
                 />
               ))
             )}
@@ -156,47 +174,6 @@ function Row({
       <div className="min-w-0 flex-1">
         <p className="text-xs text-muted-foreground">{label}</p>
         <div className="break-words">{children}</div>
-      </div>
-    </div>
-  );
-}
-
-function Bubble({
-  role,
-  content,
-  createdAt,
-  citations,
-  latencyMs,
-}: {
-  role: 'user' | 'assistant';
-  content: string;
-  createdAt: Date;
-  citations: Array<{ chunkId: string; score: number }>;
-  latencyMs: number | null;
-}) {
-  const isUser = role === 'user';
-  return (
-    <div className={`flex gap-3 ${isUser ? 'flex-row-reverse' : ''}`}>
-      <span
-        className={`mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${
-          isUser ? 'bg-foreground text-background' : 'bg-secondary text-secondary-foreground'
-        }`}
-      >
-        {isUser ? <User className="h-4 w-4" /> : <Bot className="h-4 w-4" />}
-      </span>
-      <div className="min-w-0 flex-1 space-y-1.5">
-        <div
-          className={`rounded-2xl px-4 py-3 text-sm leading-relaxed ${
-            isUser ? 'rounded-tr-sm bg-primary text-primary-foreground' : 'rounded-tl-sm border bg-card'
-          }`}
-        >
-          <p className="whitespace-pre-wrap">{content}</p>
-        </div>
-        <div className="flex flex-wrap items-center gap-2 px-1 text-[10px] uppercase tracking-wider text-muted-foreground">
-          <span>{createdAt.toLocaleString()}</span>
-          {latencyMs ? <span>· {latencyMs}ms</span> : null}
-          {citations.length > 0 ? <span>· {citations.length} citation{citations.length === 1 ? '' : 's'}</span> : null}
-        </div>
       </div>
     </div>
   );

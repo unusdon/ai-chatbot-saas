@@ -274,6 +274,11 @@ export const messages = pgTable(
     promptTokens: integer('promptTokens'),
     completionTokens: integer('completionTokens'),
     latencyMs: integer('latencyMs'),
+    // Set when admin "Adds to training" — points at the Q&A document this
+    // assistant message produced. The UI uses it to render "Trained ✓" so
+    // admins don't double-promote.
+    promotedDocumentId: uuid('promotedDocumentId'),
+    promotedAt: timestamp('promotedAt', { mode: 'date' }),
     createdAt: timestamp('createdAt', { mode: 'date' }).notNull().defaultNow(),
   },
   (t) => ({

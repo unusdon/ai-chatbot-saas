@@ -27,6 +27,10 @@ export const FAQS: Faq[] = [
     a: 'Yes — every customer conversation is admin-manageable: full transcript with citations, token counts, and latency per message; metadata including IP, browser, referrer, duration; search across message content; filter by date range and flag (review/star/abuse/spam); bulk delete; archive; JSON export per conversation. Live stats: active-24h, active-7d, unique end-users, avg messages per session.',
   },
   {
+    q: 'Can the bot learn from past conversations?',
+    a: 'Yes — every assistant reply has an "Add to training" button. Clicking it opens an editable Q&A drawer pre-filled with the user question and the bot answer; saving it creates a new Q&A source the bot will retrieve forever. The message gets a "Trained ✓" badge so admins don\'t double-promote. This is RAG-native, not model fine-tuning — works with any LLM provider, the answer is editable, and you can remove it later from the Sources page.',
+  },
+  {
     q: 'Can I see who is signed into my admin account?',
     a: 'Yes. /account/sessions lists every device you are signed in on with browser, OS, IP, and last-active time. Revoke any session you don’t recognise or sign-out-everywhere-else in one click. Changing your password automatically revokes every other session.',
   },

@@ -83,7 +83,6 @@
 
 - [✨ Highlights](#-highlights)
 - [🧠 What ships today](#-what-ships-today)
-- [🏗 Architecture](#-architecture)
 - [🛠 Tech stack](#-tech-stack)
 - [🚀 Quick start (5 minutes)](#-quick-start-5-minutes)
 - [📨 Channels — Web, Telegram, WhatsApp](#-channels--web-telegram-whatsapp)
@@ -156,39 +155,6 @@
 - Plans + usage caps (bots, documents, storage, messages/month) — **server-side enforced**
 - Stripe-backed Hosted Checkout + customer portal + webhook-synced plan state
 - Per-bot analytics: top questions + **content gaps** (questions with zero citations)
-
----
-
-## 🏗 Architecture
-
-```
-                            ┌──────────────────────────────┐
-                            │      Next.js 15 App Router   │
-                            │  marketing · dashboard · API │
-                            │  embed widget · channels API │
-                            └──────────────┬───────────────┘
-                                           │
-   ┌──────────────────┬────────────────────┼────────────────────┐
-   │                  │                    │                    │
-┌──▼───────┐    ┌─────▼──────┐      ┌──────▼──────┐     ┌───────▼──────┐
-│ Postgres │    │   Redis    │      │  S3 / MinIO │     │  LLM provider │
-│+pgvector │    │  BullMQ +  │      │   PDF/DOCX/ │     │   OpenAI /    │
-│ HNSW idx │    │ rate limit │      │   XLSX/JSON │     │   Claude /    │
-└──────────┘    └─────┬──────┘      └─────────────┘     │   Gemini /    │
-                      │                                  │   Deepseek /  │
-                ┌─────▼──────┐                           │   Ollama      │
-                │   Worker   │ chunk → embed → persist   └───────────────┘
-                │  (BullMQ)  │
-                └────────────┘
-
-External channels (all routed through one shared chat pipeline)
-   │
-   ├── 🌐 Web embed widget        →  /api/widget/chat
-   ├── 💬 Telegram (private + groups) →  /api/telegram/[channelId]
-   └── 📞 WhatsApp Cloud API      →  /api/whatsapp/[channelId]
-```
-
-The web app + worker run as **separate processes** sharing the database, Redis, and object storage. Worker scales horizontally — BullMQ coordinates ownership through Redis.
 
 ---
 

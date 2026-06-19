@@ -1,7 +1,5 @@
 import Link from 'next/link';
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-
 import { LoginForm } from './login-form';
 
 export const metadata = {
@@ -16,25 +14,26 @@ export default async function LoginPage({
 }) {
   const params = await searchParams;
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Welcome back</CardTitle>
-        <CardDescription>Log in to manage your chatbots.</CardDescription>
-      </CardHeader>
-      <CardContent className="flex flex-col gap-4">
-        <LoginForm callbackUrl={params.callbackUrl} />
-        <div className="flex items-center justify-between text-sm">
-          <Link
-            href="/forgot-password"
-            className="text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
-          >
-            Forgot password?
-          </Link>
-          <Link href="/signup" className="font-medium text-foreground underline-offset-4 hover:underline">
-            Create an account
-          </Link>
-        </div>
-      </CardContent>
-    </Card>
+    <div className="space-y-8">
+      <div className="space-y-2 text-center sm:text-left">
+        <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">Welcome back</h1>
+        <p className="text-sm text-muted-foreground">Sign in to manage your chatbots.</p>
+      </div>
+      <LoginForm callbackUrl={params.callbackUrl} />
+      <div className="flex items-center justify-between text-sm">
+        <Link
+          href="/forgot-password"
+          className="text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+        >
+          Forgot password?
+        </Link>
+        <Link
+          href="/signup"
+          className="font-medium text-foreground underline-offset-4 hover:underline"
+        >
+          Create an account
+        </Link>
+      </div>
+    </div>
   );
 }

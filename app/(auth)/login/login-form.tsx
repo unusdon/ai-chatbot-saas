@@ -1,5 +1,6 @@
 'use client';
 
+import { Loader2, LogIn } from 'lucide-react';
 import { useActionState } from 'react';
 import { useFormStatus } from 'react-dom';
 
@@ -15,18 +16,33 @@ export function LoginForm({ callbackUrl }: { callbackUrl?: string }) {
   const [state, formAction] = useActionState(loginAction, initialState);
 
   return (
-    <form action={formAction} className="flex flex-col gap-4">
+    <form action={formAction} className="space-y-5">
       <input type="hidden" name="callbackUrl" value={callbackUrl ?? ''} />
-      <div className="flex flex-col gap-1.5">
+      <div className="space-y-1.5">
         <Label htmlFor="email">Email</Label>
-        <Input id="email" name="email" type="email" autoComplete="email" required />
+        <Input
+          id="email"
+          name="email"
+          type="email"
+          autoComplete="email"
+          required
+          autoFocus
+          placeholder="you@company.com"
+        />
       </div>
-      <div className="flex flex-col gap-1.5">
+      <div className="space-y-1.5">
         <Label htmlFor="password">Password</Label>
-        <Input id="password" name="password" type="password" autoComplete="current-password" required />
+        <Input
+          id="password"
+          name="password"
+          type="password"
+          autoComplete="current-password"
+          required
+          placeholder="••••••••"
+        />
       </div>
       {state.status === 'error' ? (
-        <p className="text-sm text-destructive" role="alert">
+        <p role="alert" className="rounded-md border border-destructive/30 bg-destructive/5 px-3 py-2 text-sm text-destructive">
           {state.message}
         </p>
       ) : null}
@@ -38,7 +54,8 @@ export function LoginForm({ callbackUrl }: { callbackUrl?: string }) {
 function SubmitButton() {
   const { pending } = useFormStatus();
   return (
-    <Button type="submit" disabled={pending} className="w-full">
+    <Button type="submit" disabled={pending} size="lg" className="w-full">
+      {pending ? <Loader2 className="h-4 w-4 animate-spin" /> : <LogIn className="h-4 w-4" />}
       {pending ? 'Signing in…' : 'Log in'}
     </Button>
   );

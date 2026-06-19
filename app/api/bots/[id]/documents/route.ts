@@ -9,6 +9,12 @@ import { NextResponse } from 'next/server';
 
 import { getBotForUser } from '@/lib/server/bots';
 import { createPendingDocument } from '@/lib/server/documents';
+import {
+  QuotaExceededError,
+  assertCanIngestDocument,
+  getPlan,
+  limitsFor,
+} from '@/lib/server/plans';
 import { queueIngestJob } from '@/lib/server/queue';
 import { documentStorageKey, storage } from '@/lib/server/storage';
 import { requireAuth } from '@/lib/server/require-auth';
@@ -48,6 +54,21 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   const buffer = Buffer.from(await file.arrayBuffer());
   if (!buffer.subarray(0, PDF_MAGIC.length).equals(PDF_MAGIC)) {
     return NextResponse.json({ error: 'File is not a valid PDF (missing %PDF- header)' }, { status: 400 });
+  }
+
+  try {
+    await assertCanIngestDocument(user.id, buffer.byteLength);
+  } catch (error) {
+    if (error instanceof QuotaExceededError) {
+      const plan = await getPlan(user.id);
+      const limits = limitsFor(plan);
+      const msg =
+        error.limit === 'documents'
+          ? `Document count limit reached (${limits.documents} on the ${plan} plan).`
+          : `Storage cap reached (${(limits.documentBytes / (1024 * 1024)).toFixed(0)} MB on the ${plan} plan).`;
+      return NextResponse.json({ error: msg }, { status: 402 });
+    }
+    throw error;
   }
 
   // Insert pending row first so we have an ID to use in the storage key.

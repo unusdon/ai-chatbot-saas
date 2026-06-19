@@ -19,6 +19,23 @@ All notable changes to this project are documented in this file. Format follows
   `bots/<botId>/documents/<docId>.pdf`. Queue facade calls
   `queueIngestJob(documentId)` so M2C can drop in BullMQ without touching the
   ingest call-sites.
+- **Phase 2 / Milestone 6 — Plans + usage limits.**
+    - `plan` enum on `user` (free / starter / pro), `planChangedAt` timestamp;
+      migration `0001_add_user_plan.sql`.
+    - `lib/server/plans.ts` — declarative `PLAN_LIMITS` per tier (bots,
+      documents, document bytes, messages/month) + `getPlan`, `getUsage`,
+      and three boundary-check helpers (`assertCanCreateBot`,
+      `assertCanIngestDocument`, `assertCanSendMessage`) that throw a
+      typed `QuotaExceededError`. Usage is computed live from the DB so a
+      schema migration doesn't have to backfill.
+    - Server-side enforcement at every resource creation point:
+      bot create action, PDF upload route, URL ingest action, dashboard
+      chat endpoint, and public widget chat endpoint (billed to the bot
+      owner's plan, since they're the customer).
+    - `/account/usage` page with progress bars per limit + warning state
+      at 80% + destructive state at 100%. New `Progress` shadcn primitive.
+    - Sidebar nav: Overview ↔ Chatbots ↔ Usage.
+    - +5 integration tests for the assert helpers + usage aggregations.
 - **Phase 2 / Milestone 5 — Per-bot analytics.**
     - `lib/server/analytics.ts` with ownership-checked aggregations:
       `getBotStats` (messages by role, conversations, avg latency, tokens),

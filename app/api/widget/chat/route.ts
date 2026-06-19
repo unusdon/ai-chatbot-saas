@@ -19,6 +19,7 @@ import {
   listMessages,
 } from '@/lib/server/conversations';
 import { ragChat, type ChatTurn } from '@/lib/server/chat';
+import { QuotaExceededError, assertCanSendMessage } from '@/lib/server/plans';
 import { rateLimit } from '@/lib/server/rate-limit';
 import {
   END_USER_COOKIE_PREFIX,
@@ -62,6 +63,17 @@ export async function POST(req: Request) {
 
   const bot = await findBotByPublicKey(body.bot_key);
   if (!bot) return json({ error: 'Invalid bot key' }, 404);
+
+  // The bot owner's plan caps usage even when end-users drive it via the
+  // widget — they're the customer being metered, not the visitor.
+  try {
+    await assertCanSendMessage(bot.userId);
+  } catch (error) {
+    if (error instanceof QuotaExceededError) {
+      return json({ error: 'This chat is temporarily unavailable. Please try again later.' }, 503);
+    }
+    throw error;
+  }
 
   const ip = clientIp(req);
   const [keyLimit, ipLimit] = await Promise.all([

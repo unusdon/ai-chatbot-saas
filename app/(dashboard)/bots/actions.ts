@@ -5,6 +5,7 @@ import { redirect } from 'next/navigation';
 import { z } from 'zod';
 
 import { createBot, deleteBot, regeneratePublicKey, updateBot } from '@/lib/server/bots';
+import { QuotaExceededError, assertCanCreateBot, limitsFor, getPlan } from '@/lib/server/plans';
 import { requireAuth } from '@/lib/server/require-auth';
 
 const BotInput = z.object({
@@ -34,6 +35,20 @@ export async function createBotAction(_prev: BotActionState, formData: FormData)
     const first = parsed.error.errors[0];
     return { status: 'error', message: first.message, field: first.path[0] as 'name' | 'systemPrompt' };
   }
+
+  try {
+    await assertCanCreateBot(user.id);
+  } catch (error) {
+    if (error instanceof QuotaExceededError) {
+      const plan = await getPlan(user.id);
+      return {
+        status: 'error',
+        message: `You're on the ${plan} plan, which allows ${limitsFor(plan).bots} chatbots. Upgrade or delete an existing bot to create another.`,
+      };
+    }
+    throw error;
+  }
+
   const bot = await createBot({
     userId: user.id,
     name: parsed.data.name,

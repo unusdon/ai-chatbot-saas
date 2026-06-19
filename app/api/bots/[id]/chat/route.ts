@@ -17,6 +17,12 @@ import {
   listMessages,
 } from '@/lib/server/conversations';
 import { ragChat, type ChatTurn } from '@/lib/server/chat';
+import {
+  QuotaExceededError,
+  assertCanSendMessage,
+  getPlan,
+  limitsFor,
+} from '@/lib/server/plans';
 import { requireAuth } from '@/lib/server/require-auth';
 
 export const runtime = 'nodejs';
@@ -50,6 +56,21 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       status: 400,
       headers: { 'content-type': 'application/json' },
     });
+  }
+
+  try {
+    await assertCanSendMessage(user.id);
+  } catch (error) {
+    if (error instanceof QuotaExceededError) {
+      const plan = await getPlan(user.id);
+      return new Response(
+        JSON.stringify({
+          error: `Monthly message limit reached (${limitsFor(plan).messagesPerMonth} on the ${plan} plan).`,
+        }),
+        { status: 402, headers: { 'content-type': 'application/json' } },
+      );
+    }
+    throw error;
   }
 
   const conversation = await getOrCreateDashboardConversation(user.id, bot.id);

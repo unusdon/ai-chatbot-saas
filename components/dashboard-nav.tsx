@@ -20,6 +20,9 @@ export function DashboardNav({ user }: { user: { name?: string | null; email?: s
             <Link href="/bots" className="text-muted-foreground hover:text-foreground">
               Chatbots
             </Link>
+            <Link href="/account/usage" className="text-muted-foreground hover:text-foreground">
+              Usage
+            </Link>
           </nav>
         </div>
         <div className="flex items-center gap-4">

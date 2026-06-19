@@ -5,6 +5,12 @@ import { z } from 'zod';
 
 import { getBotForUser } from '@/lib/server/bots';
 import { createPendingDocument, deleteDocumentForUser } from '@/lib/server/documents';
+import {
+  QuotaExceededError,
+  assertCanIngestDocument,
+  getPlan,
+  limitsFor,
+} from '@/lib/server/plans';
 import { queueIngestJob } from '@/lib/server/queue';
 import { requireAuth } from '@/lib/server/require-auth';
 import { storage } from '@/lib/server/storage';
@@ -62,6 +68,22 @@ export async function ingestUrlAction(
   }
   const bot = await getBotForUser(user.id, parsed.data.botId);
   if (!bot) return { status: 'error', message: 'Bot not found' };
+
+  try {
+    // URL ingestion size isn't known until fetch — count the URL as 0 bytes
+    // here. The worker decrements the bytes budget after extraction; if a
+    // URL turns out to be huge, ingestion fails gracefully at that step.
+    await assertCanIngestDocument(user.id, 0);
+  } catch (error) {
+    if (error instanceof QuotaExceededError) {
+      const plan = await getPlan(user.id);
+      return {
+        status: 'error',
+        message: `Document count limit reached (${limitsFor(plan).documents} on the ${plan} plan).`,
+      };
+    }
+    throw error;
+  }
 
   const doc = await createPendingDocument({
     botId: bot.id,

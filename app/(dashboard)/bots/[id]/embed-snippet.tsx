@@ -18,11 +18,25 @@ export function EmbedSnippet({ botId, publicKey }: { botId: string; publicKey: s
   const snippet = `<script src="${origin || 'https://your-app.com'}/widget.js" data-bot-key="${publicKey}" defer></script>`;
   const ref = useRef<HTMLPreElement>(null);
 
-  function copy() {
-    navigator.clipboard.writeText(snippet).then(
-      () => toast.success('Snippet copied'),
-      () => toast.error('Copy failed — select the text and copy manually'),
-    );
+  async function copy() {
+    // navigator.clipboard is only available in secure contexts (HTTPS or
+    // localhost). When accessed via LAN IP / plain HTTP it's undefined —
+    // fall through to selecting the text and using the legacy execCommand
+    // so the snippet is still copyable for self-hosters on internal networks.
+    try {
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(snippet);
+        toast.success('Snippet copied');
+        return;
+      }
+    } catch {
+      // fall through to legacy path
+    }
+    if (selectInto(ref.current) && document.execCommand('copy')) {
+      toast.success('Snippet copied');
+    } else {
+      toast.error('Copy not allowed by browser — the snippet is selected; press ⌘C / Ctrl+C.');
+    }
   }
 
   return (
@@ -60,4 +74,15 @@ export function EmbedSnippet({ botId, publicKey }: { botId: string; publicKey: s
       </CardContent>
     </Card>
   );
+}
+
+function selectInto(el: HTMLElement | null): boolean {
+  if (!el) return false;
+  const selection = window.getSelection();
+  if (!selection) return false;
+  const range = document.createRange();
+  range.selectNodeContents(el);
+  selection.removeAllRanges();
+  selection.addRange(range);
+  return true;
 }

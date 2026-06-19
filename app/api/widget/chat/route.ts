@@ -21,11 +21,11 @@ import {
 import { ragChat, type ChatTurn } from '@/lib/server/chat';
 import { QuotaExceededError, assertCanSendMessage } from '@/lib/server/plans';
 import { rateLimit } from '@/lib/server/rate-limit';
+import { getOrCreateWidgetConversation } from '@/lib/server/conversations';
 import {
   END_USER_COOKIE_PREFIX,
   findBotByPublicKey,
   generateEndUserId,
-  getOrCreateWidgetConversation,
 } from '@/lib/server/widget';
 
 export const runtime = 'nodejs';
@@ -100,7 +100,13 @@ export async function POST(req: Request) {
     ? undefined
     : `${cookieName}=${endUserId}; Max-Age=${60 * 60 * 24 * 365}; Path=/; SameSite=None; Secure`;
 
-  const conversation = await getOrCreateWidgetConversation(bot.id, endUserId);
+  const conversation = await getOrCreateWidgetConversation({
+    botId: bot.id,
+    endUserId,
+    ipAddress: ip === 'unknown' ? null : ip,
+    userAgent: req.headers.get('user-agent'),
+    referrer: req.headers.get('referer'),
+  });
   const prior = await listMessages(conversation.id);
   const history: ChatTurn[] = prior
     .slice(-MAX_HISTORY_TURNS)

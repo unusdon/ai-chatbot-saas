@@ -246,10 +246,18 @@ export const conversations = pgTable(
       .notNull()
       .references(() => bots.id, { onDelete: 'cascade' }),
     endUserId: varchar('endUserId', { length: 128 }),
+    ipAddress: varchar('ipAddress', { length: 64 }),
+    userAgent: text('userAgent'),
+    referrer: text('referrer'),
+    flag: varchar('flag', { length: 32 }),
+    isArchived: boolean('isArchived').notNull().default(false),
+    lastMessageAt: timestamp('lastMessageAt', { mode: 'date' }).notNull().defaultNow(),
     createdAt: timestamp('createdAt', { mode: 'date' }).notNull().defaultNow(),
   },
   (t) => ({
     botIdx: index('conversation_bot_idx').on(t.botId),
+    lastMessageIdx: index('conversation_last_message_idx').on(t.botId, t.lastMessageAt),
+    endUserIdx: index('conversation_end_user_idx').on(t.botId, t.endUserId),
   }),
 );
 

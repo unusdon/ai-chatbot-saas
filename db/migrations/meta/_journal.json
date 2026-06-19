@@ -29,6 +29,13 @@
       "when": 1781840321148,
       "tag": "0003_add_sessions_audit",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1781846032079,
+      "tag": "0004_add_conversation_metadata",
+      "breakpoints": true
     }
   ]
 }

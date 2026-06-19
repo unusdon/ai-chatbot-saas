@@ -7,38 +7,35 @@ on:
     branches: [main]
   workflow_dispatch:
 
+# A new push to a branch cancels older runs on the same branch — keeps
+# email/billing noise down when several commits land in quick succession.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build:
     runs-on: ubuntu-latest
-
-    services:
-      postgres:
-        image: pgvector/pgvector:pg16
-        env:
-          POSTGRES_USER: chatbot
-          POSTGRES_PASSWORD: chatbot_ci_password
-          POSTGRES_DB: chatbot
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd "pg_isready -U chatbot"
-          --health-interval 5s
-          --health-timeout 5s
-          --health-retries 10
+    timeout-minutes: 15
 
     env:
       DATABASE_URL: postgres://chatbot:chatbot_ci_password@localhost:5432/chatbot
+      REAL_DATABASE_URL: postgres://chatbot:chatbot_ci_password@localhost:5432/chatbot
       AUTH_SECRET: ci-only-secret-not-used-in-prod
       AUTH_URL: http://localhost:3000
       NEXT_PUBLIC_APP_URL: http://localhost:3000
       OPENAI_API_KEY: dummy-for-build
+      REDIS_URL: redis://localhost:6379
       S3_ENDPOINT: http://localhost:9000
       S3_REGION: us-east-1
       S3_BUCKET: chatbot-documents
       S3_ACCESS_KEY_ID: minioadmin
       S3_SECRET_ACCESS_KEY: minioadmin
       S3_FORCE_PATH_STYLE: 'true'
-      REDIS_URL: redis://localhost:6379
+      # CI environment variables consumed by docker-compose.yml
+      POSTGRES_USER: chatbot
+      POSTGRES_PASSWORD: chatbot_ci_password
+      POSTGRES_DB: chatbot
 
     steps:
       - uses: actions/checkout@v4
@@ -47,6 +44,30 @@ jobs:
         with:
           node-version: '22'
           cache: 'npm'
+
+      - name: Start docker stack (Postgres + Redis + MinIO)
+        run: |
+          docker compose up -d postgres redis minio
+          # Wait for healthchecks to pass before continuing.
+          for svc in postgres redis minio; do
+            for i in {1..30}; do
+              status=$(docker inspect --format='{{.State.Health.Status}}' "chatbot-$svc" 2>/dev/null || echo starting)
+              if [ "$status" = "healthy" ]; then echo "✓ $svc healthy"; break; fi
+              if [ $i -eq 30 ]; then
+                echo "❌ $svc never reported healthy" >&2
+                docker logs "chatbot-$svc" 2>&1 | tail -40
+                exit 1
+              fi
+              sleep 2
+            done
+          done
+
+      - name: Create MinIO bucket
+        run: |
+          aws --endpoint-url http://localhost:9000 \
+              s3api create-bucket --bucket chatbot-documents \
+              --region us-east-1 2>&1 | head -5 || true
+          aws --endpoint-url http://localhost:9000 s3api list-buckets
 
       - name: Install dependencies
         run: npm ci
@@ -63,8 +84,15 @@ jobs:
       - name: Test (unit + integration)
         env:
           RUN_INTEGRATION_TESTS: '1'
-          REAL_DATABASE_URL: postgres://chatbot:chatbot_ci_password@localhost:5432/chatbot
         run: npm run test
 
       - name: Build
         run: npm run build
+
+      - name: Dump service logs on failure
+        if: failure()
+        run: |
+          for svc in postgres redis minio; do
+            echo "=== $svc logs ==="
+            docker logs "chatbot-$svc" 2>&1 | tail -50 || true
+          done

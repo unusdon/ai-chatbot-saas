@@ -10,7 +10,8 @@ describe('env validation', () => {
   });
 
   it('applies safe defaults for optional fields', () => {
-    expect(env.LLM_PROVIDER).toBe('openai');
+    expect(env.CHAT_PROVIDER).toBe('openai');
+    expect(env.EMBEDDING_PROVIDER).toBe('openai');
     expect(env.OPENAI_CHAT_MODEL).toBe('gpt-4o-mini');
     expect(env.OPENAI_EMBEDDING_MODEL).toBe('text-embedding-3-small');
     expect(env.S3_REGION).toBe('us-east-1');

@@ -25,12 +25,43 @@ const Server = z.object({
   S3_SECRET_ACCESS_KEY: z.string().optional(),
   S3_FORCE_PATH_STYLE: z.coerce.boolean().default(false),
 
-  LLM_PROVIDER: z.enum(['openai', 'anthropic']).default('openai'),
+  // Two independent provider knobs:
+  //   CHAT_PROVIDER     — which LLM streams chat answers
+  //   EMBEDDING_PROVIDER — which model turns chunks into vectors
+  // They can differ (e.g., Ollama chat + OpenAI embeddings) since embeddings
+  // need a 1536-dim model to fit the existing pgvector column without a
+  // schema change.
+  CHAT_PROVIDER: z
+    .enum(['openai', 'anthropic', 'google', 'deepseek', 'ollama'])
+    .default('openai'),
+  EMBEDDING_PROVIDER: z.enum(['openai', 'google', 'ollama']).default('openai'),
+
+  // OpenAI
   OPENAI_API_KEY: z.string().optional(),
   OPENAI_CHAT_MODEL: z.string().default('gpt-4o-mini'),
   OPENAI_EMBEDDING_MODEL: z.string().default('text-embedding-3-small'),
+
+  // Anthropic (Claude) — chat only
   ANTHROPIC_API_KEY: z.string().optional(),
-  ANTHROPIC_CHAT_MODEL: z.string().default('claude-haiku-4-5'),
+  ANTHROPIC_CHAT_MODEL: z.string().default('claude-3-5-haiku-latest'),
+
+  // Google (Gemini) — chat + embeddings
+  GOOGLE_API_KEY: z.string().optional(),
+  GOOGLE_CHAT_MODEL: z.string().default('gemini-1.5-flash'),
+  GOOGLE_EMBEDDING_MODEL: z.string().default('text-embedding-004'),
+
+  // Deepseek — OpenAI-compatible API, chat only
+  DEEPSEEK_API_KEY: z.string().optional(),
+  DEEPSEEK_CHAT_MODEL: z.string().default('deepseek-chat'),
+
+  // Ollama — local, OpenAI-compatible chat + embeddings. No API key needed.
+  OLLAMA_BASE_URL: z.string().url().default('http://localhost:11434'),
+  OLLAMA_CHAT_MODEL: z.string().default('llama3.2'),
+  OLLAMA_EMBEDDING_MODEL: z.string().default('nomic-embed-text'),
+
+  // Legacy alias — used by older code paths. Pre-existing env files should
+  // continue to work.
+  LLM_PROVIDER: z.enum(['openai', 'anthropic']).optional(),
 
   // Stripe — all optional. When unset, the /billing endpoints respond with a
   // "billing not configured" error so the rest of the app still boots.

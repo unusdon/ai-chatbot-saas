@@ -172,13 +172,23 @@ async function extractFromUrlImpl(url: string): Promise<Extracted> {
   }
 
   const dom = new JSDOM(html, { url });
-  const article = new Readability(dom.window.document).parse();
-  if (!article?.textContent) {
-    throw new Error('Could not extract readable content from the URL');
+  // Try Readability first — it strips nav, footer, ads, sidebars.
+  const article = new Readability(dom.window.document.cloneNode(true) as Document).parse();
+  let text = article?.textContent ? collapseWhitespace(article.textContent) : '';
+  let title = article?.title ?? undefined;
+
+  // Fallback: Readability often returns null on landing pages, listings, or
+  // pages without a clear article body. Grab the <body> text directly,
+  // dropping noisy elements first.
+  if (!text || text.length < 200) {
+    const body = dom.window.document.body;
+    body.querySelectorAll('script, style, nav, header, footer, aside, noscript, svg, iframe').forEach((el) => el.remove());
+    text = collapseWhitespace(body.textContent ?? '');
+    if (!title) title = dom.window.document.title || undefined;
   }
-  const text = collapseWhitespace(article.textContent);
-  if (!text) throw new Error('Extracted content was empty');
-  return { text, title: article.title ?? undefined };
+
+  if (!text) throw new Error('Page contained no extractable text');
+  return { text, title };
 }
 
 async function readBoundedText(res: Response, limit: number): Promise<string> {

@@ -1,25 +1,26 @@
 /**
- * The actual ingest pipeline. Extracted from the BullMQ worker so it can be
- * exercised directly from tests / a one-off CLI without booting Redis.
+ * Ingest pipeline — chunks are persisted *before* embedding attempts so
+ * preview always works, even when no embedding provider is configured.
  *
  * Pipeline:
- *   1. Load document row (already inserted by the upload route or URL action).
- *   2. Mark it `processing`.
- *   3. Extract raw text (PDF/DOCX → buffer extractors, URL → fetch,
- *      text/markdown/json → identity, xlsx → row-flatten).
- *   4. Chunk into ~1000-character pieces with 150-char overlap.
- *      Q&A pairs are NOT chunked — each pair is its own single chunk with
- *      the question embedded.
- *   5. Embed all chunks in batched OpenAI calls.
- *   6. Replace any existing chunks (idempotent retry) and write the new ones.
- *   7. Mark `ready` (or `failed` with the error message on any throw).
+ *   1. Load document row.
+ *   2. Mark `processing`.
+ *   3. Extract raw text.
+ *   4. Chunk.
+ *   5. Replace prior chunks + INSERT new ones with embedding=NULL.
+ *      → the user can already preview the extracted text.
+ *   6. If an embedding provider is configured: embed in batches and
+ *      UPDATE each chunk with its vector. Failures here flip the document
+ *      to `ready_no_embeddings` (chunks exist; retrieval won't find them
+ *      until re-embedded).
+ *   7. Mark `ready` only when every chunk has an embedding.
  */
 import { eq } from 'drizzle-orm';
 
 import { db } from '@/db';
 import { chunks, documents } from '@/db/schema';
 import { chunkText, type Chunk, estimateTokens } from '@/lib/server/chunker';
-import { getEmbeddingsClient } from '@/lib/server/embed';
+import { getEmbeddingsClient, isEmbeddingConfigured } from '@/lib/server/embed';
 import {
   extractFromDocx,
   extractFromJson,
@@ -42,55 +43,88 @@ export type SourceKind =
   | 'json'
   | 'qa';
 
-export async function runIngest(documentId: string): Promise<{ chunkCount: number }> {
+type IngestChunk = Chunk & { embedInput?: string };
+
+export async function runIngest(documentId: string): Promise<{ chunkCount: number; embedded: boolean }> {
   const doc = await db.query.documents.findFirst({ where: eq(documents.id, documentId) });
   if (!doc) throw new Error(`document ${documentId} not found`);
 
   await markDocumentStatus(documentId, 'processing');
 
+  // ----------------------------------------------------------------- extract
+  let split: IngestChunk[];
   try {
-    const split = await buildChunks(doc);
-    if (split.length === 0) throw new Error('No content to embed after extraction + chunking');
-
-    // For Q&A, we embed the *question* (so user queries match). For
-    // everything else we embed the chunk content itself.
-    const embedInputs = doc.source === 'qa' ? split.map((c) => c.embedInput ?? c.content) : split.map((c) => c.content);
-    const embeddings = await getEmbeddingsClient().embed(embedInputs);
-
-    // Idempotent retry: drop any chunks left over from a previous failed run.
-    await db.delete(chunks).where(eq(chunks.documentId, documentId));
-
-    await db.insert(chunks).values(
-      split.map((c, i) => ({
-        documentId,
-        botId: doc.botId,
-        chunkIndex: i,
-        content: c.content,
-        tokens: c.tokens,
-        embedding: embeddings[i],
-      })),
-    );
-
-    await markDocumentStatus(documentId, 'ready', { chunkCount: split.length });
-    return { chunkCount: split.length };
+    split = await buildChunks(doc);
   } catch (error) {
     await markDocumentStatus(documentId, 'failed', {
       error: error instanceof Error ? error.message : String(error),
     });
     throw error;
   }
-}
+  if (split.length === 0) {
+    await markDocumentStatus(documentId, 'failed', { error: 'No content to embed after extraction' });
+    return { chunkCount: 0, embedded: false };
+  }
 
-type IngestChunk = Chunk & { embedInput?: string };
+  // -------------------------------------------------------------------- save
+  // Drop prior chunks first (idempotent retry) then insert the new ones with
+  // embedding=NULL. Preview works from this point even if embedding fails.
+  await db.delete(chunks).where(eq(chunks.documentId, documentId));
+  await db.insert(chunks).values(
+    split.map((c, i) => ({
+      documentId,
+      botId: doc.botId,
+      chunkIndex: i,
+      content: c.content,
+      tokens: c.tokens,
+      embedding: null,
+    })),
+  );
+
+  // -------------------------------------------------------------- embeddings
+  if (!isEmbeddingConfigured()) {
+    await markDocumentStatus(documentId, 'failed', {
+      error: 'No embedding provider configured — chunks saved but chat won’t find them. Set OPENAI_API_KEY (or EMBEDDING_PROVIDER=ollama) and re-ingest.',
+      chunkCount: split.length,
+    });
+    return { chunkCount: split.length, embedded: false };
+  }
+
+  try {
+    const embedInputs = doc.source === 'qa'
+      ? split.map((c) => c.embedInput ?? c.content)
+      : split.map((c) => c.content);
+    const vectors = await getEmbeddingsClient().embed(embedInputs);
+
+    // Update each chunk with its vector. Read back the inserted rows so we
+    // have their ids in the same order we embedded.
+    const inserted = await db.query.chunks.findMany({
+      where: eq(chunks.documentId, documentId),
+      orderBy: (c, { asc }) => asc(c.chunkIndex),
+    });
+    for (let i = 0; i < inserted.length && i < vectors.length; i++) {
+      await db
+        .update(chunks)
+        .set({ embedding: vectors[i] })
+        .where(eq(chunks.id, inserted[i].id));
+    }
+
+    await markDocumentStatus(documentId, 'ready', { chunkCount: split.length });
+    return { chunkCount: split.length, embedded: true };
+  } catch (error) {
+    await markDocumentStatus(documentId, 'failed', {
+      error: error instanceof Error ? `Embedding failed: ${error.message}` : 'Embedding failed',
+      chunkCount: split.length,
+    });
+    return { chunkCount: split.length, embedded: false };
+  }
+}
 
 async function buildChunks(doc: {
   source: string;
   sourceUrl: string | null;
   storageKey: string | null;
   title: string;
-  // Q&A and text sources stash their content in the `error` column? No —
-  // we use a dedicated 'inlineContent' field via a separate query when
-  // needed. For now, text/markdown/json store their content in S3 as well.
 }): Promise<IngestChunk[]> {
   switch (doc.source as SourceKind) {
     case 'pdf': {
@@ -132,15 +166,10 @@ async function buildChunks(doc: {
       return chunkText(out.text, { chunkSize: 1200, chunkOverlap: 50 });
     }
     case 'qa': {
-      // Q&A: title = question, content (loaded inline) = answer.
       const answer = await loadInlineContent(doc.storageKey, 'qa');
       const formatted = `Q: ${doc.title}\n\nA: ${answer}`;
       return [
-        {
-          content: formatted,
-          tokens: estimateTokens(formatted),
-          embedInput: doc.title, // embed the question so user queries match
-        },
+        { content: formatted, tokens: estimateTokens(formatted), embedInput: doc.title },
       ];
     }
     default:

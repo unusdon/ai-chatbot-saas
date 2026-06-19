@@ -286,6 +286,41 @@ export const messages = pgTable(
   }),
 );
 
+// -----------------------------------------------------------------------------
+// Channels — each bot can be exposed via N channels (embed widget, Telegram,
+// WhatsApp). Adding more (Slack, Discord) is a new `type` value + webhook route.
+// -----------------------------------------------------------------------------
+
+export const channelTypeEnum = pgEnum('bot_channel_type', ['telegram', 'whatsapp']);
+
+export const botChannels = pgTable(
+  'bot_channel',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    botId: uuid('botId')
+      .notNull()
+      .references(() => bots.id, { onDelete: 'cascade' }),
+    type: channelTypeEnum('type').notNull(),
+    /** Random per-channel secret embedded in webhook URLs for routing + auth. */
+    webhookSecret: varchar('webhookSecret', { length: 64 }).notNull(),
+    /** Provider-specific config — see lib/server/channels.ts for shapes. */
+    config: jsonb('config').$type<Record<string, unknown>>().notNull().default({}),
+    label: text('label'),
+    externalIdentity: text('externalIdentity'),
+    isActive: boolean('isActive').notNull().default(true),
+    lastSeenAt: timestamp('lastSeenAt', { mode: 'date' }),
+    lastError: text('lastError'),
+    createdAt: timestamp('createdAt', { mode: 'date' }).notNull().defaultNow(),
+    updatedAt: timestamp('updatedAt', { mode: 'date' }).notNull().defaultNow(),
+  },
+  (t) => ({
+    botIdx: index('bot_channel_bot_idx').on(t.botId),
+    secretIdx: index('bot_channel_secret_idx').on(t.webhookSecret),
+  }),
+);
+
+export type BotChannel = typeof botChannels.$inferSelect;
+
 export type User = typeof users.$inferSelect;
 export type Bot = typeof bots.$inferSelect;
 export type Document = typeof documents.$inferSelect;

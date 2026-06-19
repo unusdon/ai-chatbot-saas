@@ -39,6 +39,10 @@ export const FAQS: Faq[] = [
     a: 'Yes for the Next.js app. The ingest worker (BullMQ + provider embeddings) needs a separate host (Railway, Render, Fly.io) because Vercel serverless can’t hold a long-lived BullMQ connection. Full deploy guide in DEPLOY.md.',
   },
   {
+    q: 'Does it work on Telegram and WhatsApp?',
+    a: 'Yes for Telegram (private chats + groups). Connect via @BotFather — paste the bot token, we register the webhook, and incoming messages route through the same RAG pipeline. Group mode is configurable: respond on every message, only on @mention, or only on replies. WhatsApp is supported via Meta\'s WhatsApp Business Cloud API for 1-to-1 conversations only (Meta does not allow bots in WhatsApp Groups). All channels feed into the same conversation admin alongside web-widget chats.',
+  },
+  {
     q: 'Is the embed widget customizable?',
     a: 'Via script-tag data-* attributes today: data-title, data-greeting, data-accent (color), data-api-base. The widget is ~3.2 KB gzipped, ships in a Shadow DOM so your site’s CSS can’t conflict with it, sets a stable end-user cookie per bot so conversations persist, and works on any host page.',
   },

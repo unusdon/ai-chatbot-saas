@@ -5,7 +5,7 @@
 </p>
 
 <p align="center">
-  Upload <strong>PDF / DOCX / XLSX / JSON / Markdown / URLs / sitemaps / Q&amp;A pairs</strong>. Pick any LLM — <strong>OpenAI · Claude · Gemini · Deepseek · Ollama</strong>. Get an embeddable Shadow-DOM widget with citations + a full conversation-management admin.
+  Upload <strong>PDF / DOCX / XLSX / JSON / Markdown / URLs / sitemaps / Q&amp;A pairs</strong>. Pick any LLM — <strong>OpenAI · Claude · Gemini · Deepseek · Ollama</strong>. Deploy across <strong>web widget · Telegram (private + groups) · WhatsApp</strong>. Full conversation admin with promote-to-training.
 </p>
 
 <p align="center">
@@ -31,6 +31,12 @@
   <img alt="Ollama" src="https://img.shields.io/badge/Ollama-local-FF5722">
 </p>
 
+<p align="center">
+  <img alt="Web widget" src="https://img.shields.io/badge/Web%20widget-3.2%20KB-0EA5E9">
+  <img alt="Telegram" src="https://img.shields.io/badge/Telegram-private%20%2B%20groups-26A5E4?logo=telegram&logoColor=white">
+  <img alt="WhatsApp" src="https://img.shields.io/badge/WhatsApp-Cloud%20API-25D366?logo=whatsapp&logoColor=white">
+</p>
+
 ---
 
 ## What this is
@@ -53,18 +59,19 @@ A production-grade open-source SaaS template you can run yourself or sell as a s
 - Chat and embeddings can use different providers (e.g., Ollama chat + OpenAI embeddings)
 - Fully local with Ollama — no API key needed, $0 OpenAI bill
 
-**Embed**
-- One `<script>` tag → Shadow-DOM widget, 3.2 KB gzipped
-- Streaming Server-Sent Events with inline citations
-- Per-bot end-user cookie so conversations persist
-- CORS open + Redis-backed rate limits per key + per IP
+**Deploy across channels**
+- **Web widget** — one `<script>` tag → Shadow-DOM, 3.2 KB gzipped, streaming SSE with inline citations, per-bot end-user cookie, CORS open, Redis-backed rate limits per key + per IP
+- **Telegram** — paste a `@BotFather` token, we register the webhook automatically. Works in private chats and groups. Group response mode is configurable: `all` / `mention` / `reply`. Long answers split at sentence boundaries (Telegram's 4096-char cap).
+- **WhatsApp Cloud API** — Meta Business setup, signature-verified webhook (`X-Hub-Signature-256` HMAC over the raw body), GET-handler for one-time URL verification, POST-handler walks the nested message structure. 1-to-1 only — Meta doesn't allow bots in WhatsApp groups.
+- All channels feed the **same conversation admin**, same RAG pipeline, same plan caps.
 
 **Manage customer conversations**
-- Every chat the bot's customers have is admin-manageable
+- Every chat the bot's customers have — across **all channels** — is admin-manageable
 - Full transcript with IP, device, referrer, duration, citation counts, latency
 - Search by message content, filter by date range + flag, bulk delete, archive, JSON export
 - Live stats: active 24h, active 7d, unique end-users, avg messages per session
 - Flag conversations as `review` / `star` / `abuse` / `spam`
+- **"Add to training"** on any assistant message — promote good Q&As into permanent training sources. Editable, idempotent, reversible.
 
 **Admin security**
 - Per-device login list with revoke ("Sign out everywhere else")

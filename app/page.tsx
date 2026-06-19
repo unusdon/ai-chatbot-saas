@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import {
   ArrowRight,
+  BookOpenCheck,
   CheckCircle2,
   Code2,
   FileText,
@@ -9,6 +10,7 @@ import {
   LayoutDashboard,
   Lock,
   MessageSquare,
+  Send,
   Sparkles,
   Users,
   Zap,
@@ -167,6 +169,8 @@ function Trustbar() {
     'Gemini',
     'Deepseek',
     'Ollama',
+    'Telegram',
+    'WhatsApp',
     'pgvector',
     'BullMQ · Redis',
     'S3 · MinIO',
@@ -212,9 +216,19 @@ function FeatureGrid() {
       body: 'One <script> tag. Shadow-DOM widget — 3.2 KB gzipped. CSS-isolated. Works on any site.',
     },
     {
+      icon: <Send className="h-5 w-5" />,
+      title: 'Telegram + WhatsApp',
+      body: 'Connect the same bot to Telegram (private + groups w/ configurable mention mode) and WhatsApp Cloud API. All channels route into one conversation admin.',
+    },
+    {
       icon: <Users className="h-5 w-5" />,
       title: 'Conversation manager',
-      body: 'Every customer chat is admin-manageable: full transcript, IP, device, search, filter, flag, archive, JSON export. Bulk actions included.',
+      body: 'Every customer chat is admin-manageable across all channels: full transcript, IP, device, search, filter, flag, archive, JSON export. Bulk actions included.',
+    },
+    {
+      icon: <BookOpenCheck className="h-5 w-5" />,
+      title: 'Promote to training',
+      body: 'Click "Add to training" on any good customer Q&A. Editable, then it becomes a permanent retrieval source — your bot gets smarter over time.',
     },
     {
       icon: <Lock className="h-5 w-5" />,

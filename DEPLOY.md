@@ -219,6 +219,52 @@ For end-to-end test:
 2. Click "Upgrade to Starter" → use Stripe's test card `4242 4242 4242 4242`.
 3. After redirect, the webhook fires within 1–2s; refresh `/account/usage` → "Current plan" badge flips to `starter`.
 
+## 7.5. Channels (Telegram + WhatsApp)
+
+Channels are configured per-bot from the dashboard (no env vars needed) — but they need your app to be reachable from the public internet via HTTPS, so they're set up after the web app is live.
+
+### Telegram
+
+End-to-end zero-config (no Meta-style approval), works on private chats and groups.
+
+1. In Telegram, DM [`@BotFather`](https://t.me/BotFather) → `/newbot` → pick a name + username → copy the token (`123456789:ABCdefGhIJKlmnoPQRsTUVwxyZ…`).
+2. In your dashboard: **Bots → pick a bot → Channels → Telegram tab** → paste the token + pick group mode → **Connect**.
+3. The app validates the token via `getMe()`, calls `setWebhook` with `https://chat.example.com/api/telegram/<channelId>` and a per-channel `secret_token`. From this point on, every message to the bot lands at our webhook.
+4. **Group mode** options:
+   - `mention` (default) — only when `@yourbotname` is in the message
+   - `reply` — only when a user replies to one of the bot's previous messages
+   - `all` — every message (chatty; only use for dedicated support groups)
+   - Private chats always respond regardless.
+5. The webhook secret rides in the `X-Telegram-Bot-Api-Secret-Token` header — we reject any inbound that doesn't match.
+6. Disconnecting the channel calls `deleteWebhook` upstream so we don't leave a dangling subscription pointing at our 404s.
+
+### WhatsApp (Meta Business Cloud API)
+
+Production-grade but takes longer because Meta gates business verification.
+
+1. **One-time Meta setup** (allow a few days for approval):
+   - Create a Meta Business account + app at <https://developers.facebook.com/apps/>.
+   - Add the **WhatsApp** product.
+   - Add a test phone number, then verify your real business phone number.
+   - Generate a **system user access token** (long-lived).
+   - Note your **App Secret** (App settings → Basic).
+   - Note your **Phone Number ID** (WhatsApp → API Setup).
+2. In your dashboard: **Bots → pick a bot → Channels → WhatsApp tab** → paste Phone Number ID + access token + App Secret → **Save**.
+3. The app mints a verify token and shows you the **webhook URL** (`https://chat.example.com/api/whatsapp/<channelId>`) on the channel card.
+4. **Back in the Meta dashboard**: WhatsApp → Configuration → Webhook → paste the URL + the verify token → subscribe to the `messages` event.
+5. Meta calls `GET /api/whatsapp/<channelId>?hub.challenge=…` to verify. We echo the challenge if the verify token matches → Meta marks the endpoint valid.
+6. From then on, every WhatsApp message POSTs to `/api/whatsapp/<channelId>` with `X-Hub-Signature-256: sha256=<HMAC(appSecret, body)>`. We verify in constant time, walk the nested message structure, and route through the same chat pipeline.
+
+**Limitation:** WhatsApp Cloud API does **not** support bots in groups. For groups, use Telegram. (Workarounds like `whatsapp-web.js` violate Meta's ToS and break constantly — not supported.)
+
+### Channel deploy gotchas
+
+- The webhook URLs must be **publicly reachable HTTPS**. `localhost` won't work for Telegram or WhatsApp (use [ngrok](https://ngrok.com/) for local testing).
+- Telegram caches the webhook URL — if you change `NEXT_PUBLIC_APP_URL`, the channel won't auto-update. Delete and re-create the channel.
+- WhatsApp signature verification reads the raw body, NOT JSON-parsed. Don't put body-parsing middleware in front of the route.
+- All channel messages count against the bot owner's monthly message cap — same plan limits as web widget messages.
+- Conversations from each channel use `endUserId` prefixes (`tg:…`, `wa:…`) so the conversation admin shows which channel a chat came from.
+
 ## 8. DNS + final URL wiring
 
 Once the app is live at `chat.example.com`:
@@ -253,6 +299,10 @@ Then end-to-end manually:
 - [ ] Upload a real PDF → wait for status → `ready`
 - [ ] Hit `/bots/[id]/chat` → ask a question → answer streams with citations
 - [ ] Embed the snippet on a separate HTML page → FAB renders → chat works
+- [ ] **Telegram**: connect a `@BotFather` bot → DM it → reply lands. Add it to a test group → `@mention` it → group reply works
+- [ ] **WhatsApp**: connect via Meta Business → verify webhook → send a message from a test WhatsApp → reply lands
+- [ ] Open `/bots/[id]/conversations` → confirm all three channels (web, Telegram, WhatsApp) show up with correct end-user prefixes
+- [ ] **Add to training**: open a conversation → click "Add to training" on a good Q&A → check `/bots/[id]/sources` → new Q&A document appears + status flips to `ready`
 - [ ] Click "Upgrade to Starter" → Stripe checkout → pay → plan flips on `/account/usage`
 - [ ] Click "Manage billing" → Stripe portal opens → cancel → plan flips back to `free`
 

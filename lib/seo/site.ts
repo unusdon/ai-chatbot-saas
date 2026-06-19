@@ -9,7 +9,7 @@ export const SITE = {
   shortName: 'Chatbot SaaS',
   tagline: 'Train an AI on your content. Embed anywhere.',
   description:
-    'Open-source multi-tenant RAG chatbot platform. Upload PDFs, DOCX, XLSX, JSON, Markdown, URLs, sitemaps, or Q&A pairs — get an embeddable AI support widget grounded in your content with citations, streaming, and per-tenant isolation. Pick any LLM: OpenAI, Anthropic Claude, Google Gemini, Deepseek, or fully local Ollama.',
+    'Open-source multi-tenant RAG chatbot platform. Upload PDFs, DOCX, XLSX, JSON, Markdown, URLs, sitemaps, or Q&A pairs. Pick any LLM: OpenAI, Anthropic Claude, Google Gemini, Deepseek, or fully local Ollama. Deploy across channels: embeddable Shadow-DOM widget, Telegram (private + groups), and WhatsApp Cloud API — all with citations, streaming, conversation management, and per-tenant isolation.',
   url: env.NEXT_PUBLIC_APP_URL.replace(/\/$/, ''),
   locale: 'en_US',
   twitter: '@cyberunite',
@@ -46,6 +46,13 @@ export const PRIMARY_KEYWORDS = [
   'customer chat analytics',
   'conversation management dashboard',
   'admin chat dashboard',
+  'Telegram chatbot SaaS',
+  'WhatsApp chatbot SaaS',
+  'Telegram bot platform',
+  'WhatsApp Cloud API bot',
+  'Telegram group bot',
+  'multi-channel chatbot',
+  'embed widget + Telegram + WhatsApp',
 ];
 
 export function absoluteUrl(path = '/'): string {

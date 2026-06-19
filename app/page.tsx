@@ -10,6 +10,7 @@ import {
   Lock,
   MessageSquare,
   Sparkles,
+  Users,
   Zap,
 } from 'lucide-react';
 
@@ -161,8 +162,12 @@ function Hero() {
 function Trustbar() {
   const items = [
     'Next.js 15',
-    'OpenAI · gpt-4o-mini',
-    'Postgres · pgvector',
+    'OpenAI',
+    'Claude',
+    'Gemini',
+    'Deepseek',
+    'Ollama',
+    'pgvector',
     'BullMQ · Redis',
     'S3 · MinIO',
     'Auth.js v5',
@@ -189,7 +194,12 @@ function FeatureGrid() {
     {
       icon: <FileText className="h-5 w-5" />,
       title: 'Ingest anything',
-      body: 'PDF, URL, plain text. Chunked with smart overlap, embedded with OpenAI, stored in pgvector with HNSW index.',
+      body: 'PDF, DOCX, XLSX, JSON, Markdown, plain text, URLs, sitemap.xml crawl (up to 200 pages), and Q&A pairs. All chunked + embedded automatically.',
+    },
+    {
+      icon: <Sparkles className="h-5 w-5" />,
+      title: 'Any LLM you want',
+      body: 'OpenAI, Anthropic Claude, Google Gemini, Deepseek, or fully local Ollama — swap with one env var. Mix providers (Ollama chat + OpenAI embeddings).',
     },
     {
       icon: <MessageSquare className="h-5 w-5" />,
@@ -200,6 +210,11 @@ function FeatureGrid() {
       icon: <Code2 className="h-5 w-5" />,
       title: 'Embed anywhere',
       body: 'One <script> tag. Shadow-DOM widget — 3.2 KB gzipped. CSS-isolated. Works on any site.',
+    },
+    {
+      icon: <Users className="h-5 w-5" />,
+      title: 'Conversation manager',
+      body: 'Every customer chat is admin-manageable: full transcript, IP, device, search, filter, flag, archive, JSON export. Bulk actions included.',
     },
     {
       icon: <Lock className="h-5 w-5" />,
@@ -213,8 +228,13 @@ function FeatureGrid() {
     },
     {
       icon: <LayoutDashboard className="h-5 w-5" />,
-      title: 'Built-in analytics',
+      title: 'Analytics + content gaps',
       body: 'Top questions, content gaps, daily volume, latency. Find the docs your bot most needs you to add.',
+    },
+    {
+      icon: <Lock className="h-5 w-5" />,
+      title: 'Admin session security',
+      body: 'Per-device login list with revoke. Password changes revoke other sessions. Full security audit log.',
     },
   ];
   return (

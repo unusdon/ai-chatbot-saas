@@ -1,7 +1,11 @@
 # AI Chatbot SaaS
 
 <p align="center">
-  <strong>Multi-tenant RAG chatbot platform — upload PDFs and URLs, get an embeddable AI support widget grounded in your content, with citations.</strong>
+  <strong>Open-source multi-tenant RAG chatbot platform. Train an AI on your content. Embed anywhere.</strong>
+</p>
+
+<p align="center">
+  Upload <strong>PDF / DOCX / XLSX / JSON / Markdown / URLs / sitemaps / Q&amp;A pairs</strong>. Pick any LLM — <strong>OpenAI · Claude · Gemini · Deepseek · Ollama</strong>. Get an embeddable Shadow-DOM widget with citations + a full conversation-management admin.
 </p>
 
 <p align="center">
@@ -13,20 +17,65 @@
   <img alt="pgvector" src="https://img.shields.io/badge/pgvector-HNSW-336791">
   <img alt="Auth.js" src="https://img.shields.io/badge/Auth.js-v5-4F46E5">
   <img alt="Drizzle ORM" src="https://img.shields.io/badge/Drizzle-ORM-C5F74F">
-  <img alt="OpenAI" src="https://img.shields.io/badge/OpenAI-RAG-412991?logo=openai">
-  <img alt="Tailwind CSS" src="https://img.shields.io/badge/Tailwind-CSS-06B6D4?logo=tailwindcss&logoColor=white">
+  <img alt="Tailwind" src="https://img.shields.io/badge/Tailwind-CSS-06B6D4?logo=tailwindcss&logoColor=white">
   <img alt="shadcn/ui" src="https://img.shields.io/badge/shadcn%2Fui-black">
   <img alt="BullMQ" src="https://img.shields.io/badge/BullMQ-Redis-DC382D?logo=redis&logoColor=white">
-  <img alt="Docker" src="https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker&logoColor=white">
+  <img alt="Stripe" src="https://img.shields.io/badge/Stripe-billing-635BFF?logo=stripe&logoColor=white">
+</p>
+
+<p align="center">
+  <img alt="OpenAI" src="https://img.shields.io/badge/OpenAI-supported-412991?logo=openai">
+  <img alt="Anthropic Claude" src="https://img.shields.io/badge/Claude-supported-D97757">
+  <img alt="Google Gemini" src="https://img.shields.io/badge/Gemini-supported-4285F4?logo=google">
+  <img alt="Deepseek" src="https://img.shields.io/badge/Deepseek-supported-0F172A">
+  <img alt="Ollama" src="https://img.shields.io/badge/Ollama-local-FF5722">
 </p>
 
 ---
 
 ## What this is
 
-A production-grade SaaS template you can run yourself or sell as a service. Each customer signs up, creates a chatbot, uploads source material (PDFs / URLs / markdown), and gets a JavaScript snippet to embed a chat widget on their site. The widget answers questions using only their content — with inline citations — so it doesn't hallucinate brand voice or facts.
+A production-grade open-source SaaS template you can run yourself or sell as a service. Each customer signs up, creates a chatbot, uploads source material in any of 9 formats, picks an LLM provider, and gets a JavaScript snippet to embed a chat widget on their site. The widget answers questions using **only** their content — with inline citations — so it doesn't hallucinate brand voice or facts.
 
-Built to ground rule #1 of this org: real-world projects, enterprise-grade, plug-and-play, no half-finished features.
+### What ships today
+
+**Train**
+- 9 source types: **PDF · DOCX · XLSX · JSON · Markdown · Plain text · URLs · sitemap.xml crawl · Q&A pairs**
+- Drag-and-drop multi-file upload with per-file progress
+- Per-source preview drawer (extracted text + every chunk + token count)
+- Inline editing for text / Markdown / JSON / Q&A → auto re-ingestion
+- Search, filter, bulk delete, retry-on-failed
+- Sitemap auto-crawl (up to 200 URLs per import)
+
+**Pick your LLM**
+- Chat: **OpenAI · Claude · Gemini · Deepseek · Ollama** (set `CHAT_PROVIDER`)
+- Embeddings: **OpenAI · Gemini · Ollama** (set `EMBEDDING_PROVIDER`)
+- Chat and embeddings can use different providers (e.g., Ollama chat + OpenAI embeddings)
+- Fully local with Ollama — no API key needed, $0 OpenAI bill
+
+**Embed**
+- One `<script>` tag → Shadow-DOM widget, 3.2 KB gzipped
+- Streaming Server-Sent Events with inline citations
+- Per-bot end-user cookie so conversations persist
+- CORS open + Redis-backed rate limits per key + per IP
+
+**Manage customer conversations**
+- Every chat the bot's customers have is admin-manageable
+- Full transcript with IP, device, referrer, duration, citation counts, latency
+- Search by message content, filter by date range + flag, bulk delete, archive, JSON export
+- Live stats: active 24h, active 7d, unique end-users, avg messages per session
+- Flag conversations as `review` / `star` / `abuse` / `spam`
+
+**Admin security**
+- Per-device login list with revoke ("Sign out everywhere else")
+- Password changes auto-revoke all other sessions
+- Full audit log (sign-in, sign-out, password / email / profile / session events)
+- Bcrypt + JWT sessions
+
+**Run the business**
+- Plans + usage caps (bots, documents, storage, messages/month) — server-side enforced
+- Stripe-backed Hosted Checkout + customer portal
+- Per-bot analytics: top questions + content gaps (questions with zero citations)
 
 ## Roadmap (transparent — what works today vs. what's coming)
 

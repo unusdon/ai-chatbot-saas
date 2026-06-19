@@ -1,4 +1,4 @@
-import { Bot, CreditCard, LayoutDashboard } from 'lucide-react';
+import { Bot, CreditCard, LayoutDashboard, Shield, User } from 'lucide-react';
 import type { ComponentType } from 'react';
 
 export type NavItem = {
@@ -24,6 +24,18 @@ export const NAV_PRIMARY: NavItem[] = [
 ];
 
 export const NAV_ACCOUNT: NavItem[] = [
+  {
+    label: 'Profile',
+    href: '/account/profile',
+    icon: User,
+    match: (p) => p.startsWith('/account/profile'),
+  },
+  {
+    label: 'Sessions',
+    href: '/account/sessions',
+    icon: Shield,
+    match: (p) => p.startsWith('/account/sessions') || p.startsWith('/account/security'),
+  },
   {
     label: 'Usage & billing',
     href: '/account/usage',

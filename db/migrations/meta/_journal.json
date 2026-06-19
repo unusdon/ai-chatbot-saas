@@ -22,6 +22,13 @@
       "when": 1781832715625,
       "tag": "0002_add_stripe_columns",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1781840321148,
+      "tag": "0003_add_sessions_audit",
+      "breakpoints": true
     }
   ]
 }

@@ -95,6 +95,71 @@ export const verificationTokens = pgTable(
 );
 
 // -----------------------------------------------------------------------------
+// Session management — independent of Auth.js's `session` table (we use JWT
+// strategy, so that table stays empty). One row per signed-in browser; the
+// JWT carries a `sid` claim that maps here. Revoking is just setting
+// `revokedAt`; the auth `session()` callback returns null if revoked, which
+// forces the next request to redirect to /login.
+// -----------------------------------------------------------------------------
+
+export const userSessions = pgTable(
+  'user_session',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    userId: text('userId')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    ipAddress: varchar('ipAddress', { length: 64 }),
+    userAgent: text('userAgent'),
+    createdAt: timestamp('createdAt', { mode: 'date' }).notNull().defaultNow(),
+    lastSeenAt: timestamp('lastSeenAt', { mode: 'date' }).notNull().defaultNow(),
+    revokedAt: timestamp('revokedAt', { mode: 'date' }),
+  },
+  (t) => ({
+    userIdx: index('user_session_user_idx').on(t.userId),
+  }),
+);
+
+export type UserSession = typeof userSessions.$inferSelect;
+
+// -----------------------------------------------------------------------------
+// Audit log — append-only record of security-relevant events. Used by the
+// /account/security page and as forensic evidence if a user reports a breach.
+// -----------------------------------------------------------------------------
+
+export const securityEventEnum = pgEnum('security_event_type', [
+  'sign_in',
+  'sign_out',
+  'session_revoked',
+  'sessions_revoked_all',
+  'password_changed',
+  'email_changed',
+  'profile_changed',
+  'account_deleted',
+]);
+
+export const securityEvents = pgTable(
+  'security_event',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    userId: text('userId')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    type: securityEventEnum('type').notNull(),
+    ipAddress: varchar('ipAddress', { length: 64 }),
+    userAgent: text('userAgent'),
+    metadata: jsonb('metadata').$type<Record<string, unknown>>(),
+    createdAt: timestamp('createdAt', { mode: 'date' }).notNull().defaultNow(),
+  },
+  (t) => ({
+    userIdx: index('security_event_user_idx').on(t.userId),
+    createdIdx: index('security_event_created_idx').on(t.createdAt),
+  }),
+);
+
+export type SecurityEvent = typeof securityEvents.$inferSelect;
+
+// -----------------------------------------------------------------------------
 // Application tables — RAG SaaS multi-tenant data
 // -----------------------------------------------------------------------------
 

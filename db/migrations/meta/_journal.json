@@ -15,6 +15,13 @@
       "when": 1781832131421,
       "tag": "0001_add_user_plan",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1781832715625,
+      "tag": "0002_add_stripe_columns",
+      "breakpoints": true
     }
   ]
 }

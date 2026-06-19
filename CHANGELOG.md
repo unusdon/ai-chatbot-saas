@@ -7,6 +7,24 @@ All notable changes to this project are documented in this file. Format follows
 ## [Unreleased]
 
 ### Added
+- **Phase 2 / Milestone 7 — Stripe billing skeleton.**
+    - Schema: `stripeCustomerId`, `stripeSubscriptionId`, `stripeSubscriptionStatus`
+      on `user` (migration 0002).
+    - `lib/server/stripe.ts` — lazy client (boot fine without keys),
+      `getOrCreateCustomer` (persists `stripeCustomerId` after first
+      checkout), `priceForPlan` + `planFromPriceId` mapping, idempotent
+      `applySubscriptionState` syncing `plan` on subscription events.
+    - Server actions `startCheckoutAction` + `openCustomerPortalAction`
+      drive Stripe Hosted Checkout + the Billing Portal.
+    - `app/api/stripe/webhook/route.ts` — signature-verified handler that
+      processes `customer.subscription.{created,updated,deleted}` and
+      ack-200s every other event (so Stripe stops retrying).
+    - `/account/usage` page now shows the Plan & billing card with Manage
+      billing + Upgrade-to-starter / Upgrade-to-pro buttons. Falls back
+      to a "billing not configured" state with the env var list when
+      Stripe keys are absent.
+    - +3 unit tests covering the price ↔ plan mapping + isBillingConfigured.
+
 - **Milestone 2A — Bot CRUD.** Create, list, edit, and delete chatbots from the
   dashboard. Each bot has a rotatable `publicKey` rendered as a copy-able embed
   snippet. Server actions enforce ownership; multi-tenant isolation is

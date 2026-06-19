@@ -46,6 +46,9 @@ export const users = pgTable('user', {
   hashedPassword: text('hashedPassword'),
   plan: planEnum('plan').notNull().default('free'),
   planChangedAt: timestamp('planChangedAt', { mode: 'date' }).notNull().defaultNow(),
+  stripeCustomerId: text('stripeCustomerId'),
+  stripeSubscriptionId: text('stripeSubscriptionId'),
+  stripeSubscriptionStatus: text('stripeSubscriptionStatus'),
   createdAt: timestamp('createdAt', { mode: 'date' }).notNull().defaultNow(),
 });
 

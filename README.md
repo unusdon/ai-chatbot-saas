@@ -47,7 +47,9 @@ Built to ground rule #1 of this org: real-world projects, enterprise-grade, plug
 |---|---|---|
 | **P5 — Per-bot analytics** | ✅ shipped | Stats (messages, conversations, avg latency, tokens), 14-day SVG bar chart, top questions, content-gap surface (questions with zero citations → highest-ROI sources to add next) |
 | **P6 — Plans + usage limits** | ✅ shipped | `plan` enum on users (free / starter / pro), declarative `PLAN_LIMITS` (bots, documents, document bytes, messages/month), `assertCan*` helpers enforced server-side at bot creation, PDF + URL ingest, and chat (both dashboard + widget). `/account/usage` shows live progress bars per limit. |
-| **P7 — Stripe billing** | planned | Hosted checkout, webhook handler, customer portal |
+| **P7 — Stripe billing** | ✅ shipped | Lazy-created Stripe customer per user, hosted checkout for starter/pro, signature-verified webhook syncing plan on `customer.subscription.{created,updated,deleted}`, customer portal redirect. Boots fine without Stripe envs; UI explains how to configure. |
+
+**Phase 2 complete.** Self-hosting customers can upgrade, downgrade, and manage their subscription end-to-end (once Stripe keys are configured).
 
 This README documents M1. The roadmap items above link to GitHub issues as work begins.
 

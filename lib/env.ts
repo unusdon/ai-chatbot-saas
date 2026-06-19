@@ -31,6 +31,13 @@ const Server = z.object({
   OPENAI_EMBEDDING_MODEL: z.string().default('text-embedding-3-small'),
   ANTHROPIC_API_KEY: z.string().optional(),
   ANTHROPIC_CHAT_MODEL: z.string().default('claude-haiku-4-5'),
+
+  // Stripe — all optional. When unset, the /billing endpoints respond with a
+  // "billing not configured" error so the rest of the app still boots.
+  STRIPE_SECRET_KEY: z.string().optional(),
+  STRIPE_WEBHOOK_SECRET: z.string().optional(),
+  STRIPE_PRICE_STARTER: z.string().optional(),
+  STRIPE_PRICE_PRO: z.string().optional(),
 });
 
 const Client = z.object({

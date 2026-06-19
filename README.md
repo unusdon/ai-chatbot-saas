@@ -245,12 +245,7 @@ Auth.js tables (`user`, `account`, `session`, `verificationToken`) plus the appl
 
 ## Deployment
 
-Production deployment guides ship in M5. The short version:
-
-- **Vercel** for the Next.js app (App Router + standalone output already configured).
-- **Neon / Supabase / Railway** for managed Postgres with pgvector. Run `CREATE EXTENSION vector;` once.
-- **Upstash** for managed Redis (BullMQ-compatible).
-- **AWS S3** or **Cloudflare R2** instead of MinIO. Set `S3_FORCE_PATH_STYLE=false` for S3.
+See [**DEPLOY.md**](./DEPLOY.md) for the full production guide: managed Postgres (Neon / Supabase / RDS) with pgvector, Upstash Redis, AWS S3 or Cloudflare R2, OpenAI key setup, Vercel for the app, a separate worker host (Railway / Render / Fly.io) for the BullMQ consumer, Stripe configuration (products + prices + webhook + customer portal), DNS wiring, and a verification checklist that runs through the full signup → upload → chat → upgrade → portal round-trip on your live deploy.
 
 ## Contributing
 

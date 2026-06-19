@@ -82,13 +82,23 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   await appendUserMessage(conversation.id, body.message);
 
   const start = Date.now();
-  const { stream, citations } = await ragChat({
-    userId: user.id,
-    botId: bot.id,
-    systemPrompt: bot.systemPrompt,
-    message: body.message,
-    history,
-  });
+  let ragResult: Awaited<ReturnType<typeof ragChat>>;
+  try {
+    ragResult = await ragChat({
+      userId: user.id,
+      botId: bot.id,
+      systemPrompt: bot.systemPrompt,
+      message: body.message,
+      history,
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Chat backend unavailable';
+    return new Response(JSON.stringify({ error: message }), {
+      status: 503,
+      headers: { 'content-type': 'application/json' },
+    });
+  }
+  const { stream, citations } = ragResult;
 
   const encoder = new TextEncoder();
   let assembled = '';

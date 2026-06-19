@@ -109,13 +109,22 @@ export async function POST(req: Request) {
   await appendUserMessage(conversation.id, body.message);
 
   const start = Date.now();
-  const { stream, citations } = await ragChat({
-    userId: bot.userId,
-    botId: bot.id,
-    systemPrompt: bot.systemPrompt,
-    message: body.message,
-    history,
-  });
+  let ragResult: Awaited<ReturnType<typeof ragChat>>;
+  try {
+    ragResult = await ragChat({
+      userId: bot.userId,
+      botId: bot.id,
+      systemPrompt: bot.systemPrompt,
+      message: body.message,
+      history,
+    });
+  } catch (error) {
+    // Anything thrown synchronously by ragChat (e.g., OPENAI_API_KEY missing)
+    // turns into a JSON error so the widget can surface it instead of "HTTP 500".
+    const message = error instanceof Error ? error.message : 'Chat backend unavailable';
+    return json({ error: message }, 503);
+  }
+  const { stream, citations } = ragResult;
 
   const encoder = new TextEncoder();
   let assembled = '';

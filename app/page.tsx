@@ -10,6 +10,7 @@ export default async function LandingPage() {
   return (
     <main className="flex min-h-screen flex-col">
       <header className="border-b">
+      <script src="http://192.168.0.59:3000/widget.js" data-bot-key="bot_7abxbWBJv41QJXe0yBq-q7T7YkLS_T8S" defer></script>
         <div className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between px-6">
           <Link href="/" className="flex items-center gap-2 font-semibold">
             <Sparkles className="h-5 w-5" />

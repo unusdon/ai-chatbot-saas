@@ -44,3 +44,7 @@ loosely so the changelog stays scannable:
 - `chore:` — build, deps, CI
 
 Be respectful in discussions. See `CODE_OF_CONDUCT.md`.
+
+## Contributors
+
+See [CONTRIBUTORS.md](CONTRIBUTORS.md) for the full list.

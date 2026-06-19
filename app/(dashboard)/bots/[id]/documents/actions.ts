@@ -28,8 +28,6 @@ export type DocumentActionState =
   | { status: 'error'; message: string; field?: string }
   | { status: 'ok'; message: string };
 
-const IDLE: DocumentActionState = { status: 'idle' };
-
 // --- URL ingestion ----------------------------------------------------------
 
 const UrlInput = z.object({
@@ -458,5 +456,3 @@ async function updateStorageKey(documentId: string, key: string): Promise<void> 
   const { eq } = await import('drizzle-orm');
   await db.update(documents).set({ storageKey: key, updatedAt: new Date() }).where(eq(documents.id, documentId));
 }
-
-export { IDLE as IDLE_STATE };

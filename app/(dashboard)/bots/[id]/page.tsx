@@ -1,4 +1,4 @@
-import { ArrowLeft, BarChart3, MessageSquare } from 'lucide-react';
+import { ArrowLeft, BarChart3, FileType2, MessageSquare } from 'lucide-react';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 
@@ -58,6 +58,11 @@ export default async function BotDetailPage({ params }: { params: Promise<{ id: 
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
+            <Button asChild variant="outline">
+              <Link href={`/bots/${bot.id}/sources`}>
+                <FileType2 className="h-4 w-4" /> Sources
+              </Link>
+            </Button>
             <Button asChild variant="outline">
               <Link href={`/bots/${bot.id}/analytics`}>
                 <BarChart3 className="h-4 w-4" /> Analytics

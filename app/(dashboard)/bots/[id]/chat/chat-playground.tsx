@@ -1,10 +1,9 @@
 'use client';
 
-import { Send, Trash2 } from 'lucide-react';
+import { Bot as BotIcon, ExternalLink, MessageSquare, Send, Sparkles, Trash2, User } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 
@@ -38,6 +37,7 @@ export function ChatPlayground({
   const [input, setInput] = useState('');
   const [pending, setPending] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' });
@@ -67,9 +67,7 @@ export function ChatPlayground({
       await consumeSSE(res.body, (event) => {
         if (event.type === 'token') {
           setMessages((prev) =>
-            prev.map((m) =>
-              m.id === assistantId ? { ...m, content: m.content + event.token } : m,
-            ),
+            prev.map((m) => (m.id === assistantId ? { ...m, content: m.content + event.token } : m)),
           );
         } else if (event.type === 'citations') {
           setMessages((prev) =>
@@ -88,25 +86,27 @@ export function ChatPlayground({
     } finally {
       setMessages((prev) => prev.map((m) => (m.streaming ? { ...m, streaming: false } : m)));
       setPending(false);
+      textareaRef.current?.focus();
     }
   }
 
   return (
-    <div className="flex h-[600px] flex-col">
-      <div ref={scrollRef} className="flex-1 overflow-y-auto p-6">
+    <div className="flex h-[calc(100vh-220px)] min-h-[480px] flex-col">
+      <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-6 sm:px-6">
         {messages.length === 0 ? (
-          <EmptyState />
+          <EmptyState onPrompt={(p) => { setInput(p); textareaRef.current?.focus(); }} />
         ) : (
-          <div className="flex flex-col gap-4">
+          <div className="space-y-5">
             {messages.map((m) => (
               <Bubble key={m.id} message={m} />
             ))}
           </div>
         )}
       </div>
-      <div className="border-t p-4">
-        <form onSubmit={send} className="flex gap-2">
+      <div className="border-t bg-card">
+        <form onSubmit={send} className="flex items-end gap-2 p-3 sm:p-4">
           <Textarea
+            ref={textareaRef}
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => {
@@ -115,12 +115,12 @@ export function ChatPlayground({
                 void send();
               }
             }}
-            placeholder="Ask anything about this bot's sources…"
+            placeholder="Ask anything about this bot's sources…  (Enter to send · Shift+Enter for newline)"
             rows={1}
             className="min-h-[44px] resize-none"
             disabled={pending}
           />
-          <Button type="submit" disabled={pending || !input.trim()}>
+          <Button type="submit" size="icon" disabled={pending || !input.trim()} aria-label="Send">
             <Send className="h-4 w-4" />
           </Button>
           <form action={clearConversationAction}>
@@ -132,6 +132,7 @@ export function ChatPlayground({
               title="Clear conversation"
               aria-label="Clear conversation"
               onClick={() => setMessages([])}
+              className="text-muted-foreground hover:text-destructive"
             >
               <Trash2 className="h-4 w-4" />
             </Button>
@@ -145,33 +146,51 @@ export function ChatPlayground({
 function Bubble({ message }: { message: Message }) {
   const isUser = message.role === 'user';
   return (
-    <div className={`flex ${isUser ? 'justify-end' : 'justify-start'}`}>
-      <div
-        className={`max-w-2xl rounded-lg px-4 py-3 text-sm ${
-          isUser ? 'bg-primary text-primary-foreground' : 'bg-muted'
-        }`}
-      >
-        <p className="whitespace-pre-wrap leading-relaxed">
-          {message.content || (message.streaming ? '…' : '')}
-        </p>
+    <div className={`flex gap-3 ${isUser ? 'justify-end' : 'justify-start'}`}>
+      {!isUser ? (
+        <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-secondary text-secondary-foreground">
+          <BotIcon className="h-4 w-4" />
+        </span>
+      ) : null}
+      <div className={`max-w-[85%] sm:max-w-2xl`}>
+        <div
+          className={`rounded-2xl px-4 py-3 text-sm leading-relaxed ${
+            isUser
+              ? 'rounded-br-sm bg-primary text-primary-foreground'
+              : 'rounded-bl-sm border bg-card'
+          }`}
+        >
+          <p className="whitespace-pre-wrap">
+            {message.content || (message.streaming ? <ThinkingDots /> : '')}
+          </p>
+        </div>
         {message.citations && message.citations.length > 0 ? (
-          <div className="mt-3 flex flex-wrap gap-1.5">
+          <div className="mt-2 flex flex-wrap gap-1.5">
             {message.citations.map((c, i) => (
               <CitationChip key={c.chunkId} index={i + 1} citation={c} />
             ))}
           </div>
         ) : null}
       </div>
+      {isUser ? (
+        <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-foreground text-background">
+          <User className="h-4 w-4" />
+        </span>
+      ) : null}
     </div>
   );
 }
 
 function CitationChip({ index, citation }: { index: number; citation: Citation }) {
-  const label = `[${index}] ${citation.documentTitle ?? 'source'}`;
+  const label = `${index}. ${citation.documentTitle ?? 'source'}`;
   const inner = (
-    <Badge variant="outline" className="cursor-pointer text-[10px]" title={`Similarity ${(citation.score * 100).toFixed(0)}%`}>
+    <span
+      className="inline-flex items-center gap-1 rounded-full border bg-card px-2 py-0.5 text-[10px] font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+      title={`Similarity ${(citation.score * 100).toFixed(0)}%`}
+    >
       {label}
-    </Badge>
+      {citation.sourceUrl ? <ExternalLink className="h-2.5 w-2.5" /> : null}
+    </span>
   );
   return citation.sourceUrl ? (
     <a href={citation.sourceUrl} target="_blank" rel="noreferrer">
@@ -182,13 +201,43 @@ function CitationChip({ index, citation }: { index: number; citation: Citation }
   );
 }
 
-function EmptyState() {
+function ThinkingDots() {
   return (
-    <div className="flex h-full flex-col items-center justify-center text-center text-sm text-muted-foreground">
-      <p className="max-w-md">
-        Ask a question your bot should be able to answer from the sources you uploaded. Use this
-        playground to sanity-check responses before embedding the widget.
+    <span className="inline-flex gap-1">
+      <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-muted-foreground" style={{ animationDelay: '0ms' }} />
+      <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-muted-foreground" style={{ animationDelay: '150ms' }} />
+      <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-muted-foreground" style={{ animationDelay: '300ms' }} />
+    </span>
+  );
+}
+
+function EmptyState({ onPrompt }: { onPrompt: (p: string) => void }) {
+  const prompts = [
+    'What does this bot know about?',
+    'Summarize the most recent uploaded document.',
+    'What can\'t you answer yet?',
+  ];
+  return (
+    <div className="flex h-full flex-col items-center justify-center text-center">
+      <span className="flex h-12 w-12 items-center justify-center rounded-full border bg-card text-muted-foreground shadow-soft">
+        <MessageSquare className="h-5 w-5" />
+      </span>
+      <h3 className="mt-4 text-base font-semibold">Ask your first question</h3>
+      <p className="mx-auto mt-1 max-w-md text-sm text-muted-foreground">
+        Try one of these to sanity-check your sources before embedding the widget.
       </p>
+      <div className="mt-6 flex flex-wrap justify-center gap-2">
+        {prompts.map((p) => (
+          <button
+            key={p}
+            type="button"
+            onClick={() => onPrompt(p)}
+            className="inline-flex items-center gap-1.5 rounded-full border bg-card px-3 py-1.5 text-xs text-muted-foreground shadow-soft transition-colors hover:bg-accent hover:text-foreground"
+          >
+            <Sparkles className="h-3 w-3" /> {p}
+          </button>
+        ))}
+      </div>
     </div>
   );
 }
@@ -213,7 +262,7 @@ async function consumeSSE(
       try {
         onEvent(JSON.parse(line) as SSEEvent);
       } catch {
-        // ignore malformed chunk
+        /* ignore malformed chunk */
       }
     }
   }

@@ -1,6 +1,6 @@
 'use client';
 
-import { Upload } from 'lucide-react';
+import { Loader2, Upload } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useRef, useState } from 'react';
 import { toast } from 'sonner';
@@ -46,15 +46,31 @@ export function PdfUploadForm({ botId }: { botId: string }) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-1.5 rounded-md border bg-card p-4">
-      <Label htmlFor="pdf-upload" className="text-sm font-semibold">
-        Upload a PDF
-      </Label>
-      <p className="text-xs text-muted-foreground">Max {MAX_MB} MB. Text + images supported.</p>
+    <form
+      onSubmit={handleSubmit}
+      className="flex flex-col gap-2 rounded-lg border bg-surface-2 p-4"
+    >
+      <div className="flex items-center justify-between">
+        <Label htmlFor="pdf-upload" className="text-sm font-semibold">
+          Upload PDF
+        </Label>
+        <span className="text-[10px] uppercase tracking-wider text-muted-foreground">
+          ≤ {MAX_MB} MB
+        </span>
+      </div>
+      <p className="text-xs text-muted-foreground">Text + image PDFs supported.</p>
       <div className="mt-2 flex flex-col gap-2 sm:flex-row">
-        <Input ref={fileRef} id="pdf-upload" type="file" accept="application/pdf,.pdf" required />
+        <Input
+          ref={fileRef}
+          id="pdf-upload"
+          type="file"
+          accept="application/pdf,.pdf"
+          required
+          className="cursor-pointer file:cursor-pointer"
+        />
         <Button type="submit" disabled={pending} className="shrink-0">
-          <Upload className="mr-2 h-4 w-4" /> {pending ? 'Uploading…' : 'Upload'}
+          {pending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
+          {pending ? 'Uploading' : 'Upload'}
         </Button>
       </div>
     </form>

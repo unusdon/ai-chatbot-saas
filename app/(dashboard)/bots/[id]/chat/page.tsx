@@ -1,8 +1,9 @@
+import { ArrowLeft, Settings2 } from 'lucide-react';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { getBotForUser } from '@/lib/server/bots';
 import { getOrCreateDashboardConversation, listMessages } from '@/lib/server/conversations';
 import { requireAuth } from '@/lib/server/require-auth';
@@ -15,7 +16,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   const { id } = await params;
   const user = await requireAuth();
   const bot = await getBotForUser(user.id, id);
-  return { title: bot ? `Chat with ${bot.name}` : 'Chat' };
+  return { title: bot ? `Chat · ${bot.name}` : 'Chat' };
 }
 
 export default async function ChatPage({ params }: { params: Promise<{ id: string }> }) {
@@ -34,27 +35,30 @@ export default async function ChatPage({ params }: { params: Promise<{ id: strin
   }));
 
   return (
-    <div className="flex flex-col gap-6">
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <Button asChild variant="ghost" size="sm">
-            <Link href={`/bots/${bot.id}`}>← Back to {bot.name}</Link>
+    <div className="space-y-6">
+      <div className="space-y-3">
+        <Button asChild variant="ghost" size="sm" className="text-muted-foreground">
+          <Link href={`/bots/${bot.id}`}>
+            <ArrowLeft className="h-4 w-4" /> Back to {bot.name}
+          </Link>
+        </Button>
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+          <div className="space-y-1.5">
+            <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">Playground</h1>
+            <p className="text-sm text-muted-foreground">
+              This uses the same RAG pipeline as your embed widget. Answers are grounded in this
+              bot&apos;s sources only.
+            </p>
+          </div>
+          <Button asChild variant="outline" size="sm">
+            <Link href={`/bots/${bot.id}`}>
+              <Settings2 className="h-4 w-4" /> Settings
+            </Link>
           </Button>
-          <h1 className="mt-2 text-2xl font-bold">Chat with {bot.name}</h1>
-          <p className="text-sm text-muted-foreground">
-            This playground uses the same RAG pipeline your embed widget will. Answers are grounded
-            in this bot&apos;s sources only.
-          </p>
         </div>
       </div>
 
       <Card className="overflow-hidden">
-        <CardHeader>
-          <CardTitle className="text-base">Playground</CardTitle>
-          <CardDescription>
-            Conversation is saved per-bot for your account. Clear it anytime.
-          </CardDescription>
-        </CardHeader>
         <CardContent className="p-0">
           <ChatPlayground botId={bot.id} initialMessages={initialMessages} />
         </CardContent>

@@ -1,6 +1,6 @@
 'use client';
 
-import { Copy, RefreshCw } from 'lucide-react';
+import { Code2, Copy, RefreshCw } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 
@@ -19,10 +19,6 @@ export function EmbedSnippet({ botId, publicKey }: { botId: string; publicKey: s
   const ref = useRef<HTMLPreElement>(null);
 
   async function copy() {
-    // navigator.clipboard is only available in secure contexts (HTTPS or
-    // localhost). When accessed via LAN IP / plain HTTP it's undefined —
-    // fall through to selecting the text and using the legacy execCommand
-    // so the snippet is still copyable for self-hosters on internal networks.
     try {
       if (navigator.clipboard?.writeText) {
         await navigator.clipboard.writeText(snippet);
@@ -30,12 +26,12 @@ export function EmbedSnippet({ botId, publicKey }: { botId: string; publicKey: s
         return;
       }
     } catch {
-      // fall through to legacy path
+      /* fall through */
     }
     if (selectInto(ref.current) && document.execCommand('copy')) {
       toast.success('Snippet copied');
     } else {
-      toast.error('Copy not allowed by browser — the snippet is selected; press ⌘C / Ctrl+C.');
+      toast.error('Copy not allowed — the snippet is selected; press ⌘C / Ctrl+C.');
     }
   }
 
@@ -44,33 +40,37 @@ export function EmbedSnippet({ botId, publicKey }: { botId: string; publicKey: s
       <CardHeader>
         <CardTitle>Embed snippet</CardTitle>
         <CardDescription>
-          Paste this into the {'<'}head{'>'} of any site. The widget injects a Shadow-DOM chat panel
-          so it can&apos;t conflict with your CSS. End-users get a stable identity via cookie so their
-          conversation persists across visits.
+          Paste this into the <code className="font-mono text-xs">&lt;head&gt;</code> of any site. The
+          widget injects a Shadow-DOM chat panel so it can&apos;t conflict with your CSS.
         </CardDescription>
       </CardHeader>
-      <CardContent className="flex flex-col gap-3">
-        <pre
-          ref={ref}
-          className="overflow-x-auto rounded-md border bg-muted px-4 py-3 text-xs leading-relaxed"
-        >
-          <code>{snippet}</code>
-        </pre>
-        <div className="flex flex-wrap gap-2">
-          <Button type="button" variant="outline" size="sm" onClick={copy}>
-            <Copy className="mr-2 h-4 w-4" /> Copy snippet
-          </Button>
+      <CardContent className="space-y-4">
+        <div className="relative overflow-hidden rounded-lg border bg-surface-2">
+          <div className="flex items-center justify-between border-b bg-card/50 px-4 py-2">
+            <span className="inline-flex items-center gap-2 text-xs text-muted-foreground">
+              <Code2 className="h-3.5 w-3.5" /> HTML
+            </span>
+            <Button type="button" variant="ghost" size="sm" onClick={copy} className="h-7 px-2 text-xs">
+              <Copy className="h-3.5 w-3.5" /> Copy
+            </Button>
+          </div>
+          <pre ref={ref} className="overflow-x-auto p-4 font-mono text-xs leading-relaxed">
+            <code>{snippet}</code>
+          </pre>
+        </div>
+
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-xs text-muted-foreground">
+            Regenerating the key immediately invalidates the snippet on every site it&apos;s embedded
+            in.
+          </p>
           <form action={regeneratePublicKeyAction}>
             <input type="hidden" name="id" value={botId} />
-            <Button type="submit" variant="ghost" size="sm">
-              <RefreshCw className="mr-2 h-4 w-4" /> Regenerate key
+            <Button type="submit" variant="outline" size="sm">
+              <RefreshCw className="h-4 w-4" /> Regenerate key
             </Button>
           </form>
         </div>
-        <p className="text-xs text-muted-foreground">
-          Regenerating the key immediately invalidates the old snippet on every site it&apos;s embedded
-          in.
-        </p>
       </CardContent>
     </Card>
   );

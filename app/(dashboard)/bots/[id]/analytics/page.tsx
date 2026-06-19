@@ -1,6 +1,6 @@
-import { Activity, AlertTriangle, MessageSquare, Timer, Users } from 'lucide-react';
-import Link from 'next/link';
+import { Activity, AlertTriangle, ArrowLeft, MessageSquare, Timer, Users } from 'lucide-react';
 import { notFound } from 'next/navigation';
+import Link from 'next/link';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -21,7 +21,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   const { id } = await params;
   const user = await requireAuth();
   const bot = await getBotForUser(user.id, id);
-  return { title: bot ? `Analytics — ${bot.name}` : 'Analytics' };
+  return { title: bot ? `Analytics · ${bot.name}` : 'Analytics' };
 }
 
 export default async function AnalyticsPage({ params }: { params: Promise<{ id: string }> }) {
@@ -36,51 +36,54 @@ export default async function AnalyticsPage({ params }: { params: Promise<{ id: 
     getTopQueries(user.id, bot.id, 10),
     getContentGaps(user.id, bot.id, 10),
   ]);
-
   if (!stats) notFound();
 
   return (
-    <div className="flex flex-col gap-6">
-      <div>
-        <Button asChild variant="ghost" size="sm">
-          <Link href={`/bots/${bot.id}`}>← Back to {bot.name}</Link>
+    <div className="space-y-8">
+      <div className="space-y-3">
+        <Button asChild variant="ghost" size="sm" className="text-muted-foreground">
+          <Link href={`/bots/${bot.id}`}>
+            <ArrowLeft className="h-4 w-4" /> Back to {bot.name}
+          </Link>
         </Button>
-        <h1 className="mt-2 text-2xl font-bold">Analytics for {bot.name}</h1>
-        <p className="text-sm text-muted-foreground">
-          Last 14 days. Use the content-gap list to find questions your sources can&apos;t yet
-          answer.
-        </p>
+        <div className="space-y-1.5">
+          <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">Analytics</h1>
+          <p className="text-sm text-muted-foreground">
+            Last 14 days. The Content Gaps card surfaces the highest-ROI sources to add next.
+          </p>
+        </div>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Stat
+        <StatCard
           icon={<MessageSquare className="h-4 w-4" />}
           label="Total messages"
           value={stats.totalMessages.toLocaleString()}
           hint={`${stats.userMessages.toLocaleString()} user · ${stats.assistantMessages.toLocaleString()} assistant`}
         />
-        <Stat
+        <StatCard
           icon={<Users className="h-4 w-4" />}
           label="Conversations"
           value={stats.totalConversations.toLocaleString()}
         />
-        <Stat
+        <StatCard
           icon={<Timer className="h-4 w-4" />}
           label="Avg latency"
           value={stats.avgLatencyMs == null ? '—' : `${Math.round(stats.avgLatencyMs)} ms`}
+          hint="From query to first byte"
         />
-        <Stat
+        <StatCard
           icon={<Activity className="h-4 w-4" />}
-          label="Tokens (in/out)"
+          label="Tokens (in / out)"
           value={`${formatTokens(stats.totalPromptTokens)} / ${formatTokens(stats.totalCompletionTokens)}`}
-          hint="Estimated from OpenAI responses"
+          hint="From OpenAI responses"
         />
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">User messages — last 14 days</CardTitle>
-          <CardDescription>Daily volume of end-user questions hitting this bot.</CardDescription>
+          <CardTitle>Messages — last 14 days</CardTitle>
+          <CardDescription>Daily volume of end-user questions.</CardDescription>
         </CardHeader>
         <CardContent>
           <DailyMessageChart data={daily} />
@@ -90,18 +93,21 @@ export default async function AnalyticsPage({ params }: { params: Promise<{ id: 
       <div className="grid gap-6 lg:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Top questions</CardTitle>
-            <CardDescription>Most frequent user messages.</CardDescription>
+            <CardTitle>Top questions</CardTitle>
+            <CardDescription>Most-asked user prompts.</CardDescription>
           </CardHeader>
           <CardContent>
             {topQueries.length === 0 ? (
-              <p className="text-sm text-muted-foreground">No questions yet.</p>
+              <EmptyState label="No questions yet." />
             ) : (
               <ul className="divide-y rounded-md border">
                 {topQueries.map((q, i) => (
-                  <li key={i} className="flex items-start justify-between gap-3 px-3 py-2.5 text-sm">
-                    <span className="line-clamp-2 flex-1">{q.content}</span>
-                    <span className="shrink-0 rounded bg-muted px-2 py-0.5 text-xs tabular-nums">
+                  <li key={i} className="flex items-start gap-3 px-4 py-3">
+                    <span className="mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-secondary text-[10px] font-semibold tabular-nums text-muted-foreground">
+                      {i + 1}
+                    </span>
+                    <p className="line-clamp-2 flex-1 text-sm leading-snug">{q.content}</p>
+                    <span className="shrink-0 rounded-full bg-muted px-2 py-0.5 text-xs tabular-nums text-muted-foreground">
                       {q.count}×
                     </span>
                   </li>
@@ -113,23 +119,21 @@ export default async function AnalyticsPage({ params }: { params: Promise<{ id: 
 
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-base">
-              <AlertTriangle className="h-4 w-4 text-amber-500" />
-              Content gaps
+            <CardTitle className="flex items-center gap-2">
+              <AlertTriangle className="h-4 w-4 text-amber-500" /> Content gaps
             </CardTitle>
             <CardDescription>
-              Questions the bot couldn&apos;t answer (no relevant chunks). These are the highest-ROI
-              sources to add next.
+              Questions the bot couldn&apos;t answer (no relevant chunks). Add a source for these.
             </CardDescription>
           </CardHeader>
           <CardContent>
             {contentGaps.length === 0 ? (
-              <p className="text-sm text-muted-foreground">No content gaps detected.</p>
+              <EmptyState label="No content gaps detected." />
             ) : (
               <ul className="divide-y rounded-md border">
                 {contentGaps.map((g) => (
-                  <li key={g.messageId} className="px-3 py-2.5 text-sm">
-                    <p className="line-clamp-2 font-medium">{g.question}</p>
+                  <li key={g.messageId} className="px-4 py-3">
+                    <p className="line-clamp-2 text-sm font-medium">{g.question}</p>
                     <p className="mt-0.5 text-xs text-muted-foreground">
                       {g.createdAt.toLocaleString()}
                     </p>
@@ -144,7 +148,7 @@ export default async function AnalyticsPage({ params }: { params: Promise<{ id: 
   );
 }
 
-function Stat({
+function StatCard({
   icon,
   label,
   value,
@@ -156,16 +160,22 @@ function Stat({
   hint?: string;
 }) {
   return (
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-sm font-medium text-muted-foreground">{label}</CardTitle>
-        <div className="text-muted-foreground">{icon}</div>
-      </CardHeader>
-      <CardContent>
-        <div className="text-2xl font-bold">{value}</div>
-        {hint ? <p className="mt-1 text-xs text-muted-foreground">{hint}</p> : null}
-      </CardContent>
-    </Card>
+    <div className="rounded-lg border bg-card p-5 shadow-soft">
+      <div className="flex items-center justify-between">
+        <p className="text-xs font-medium text-muted-foreground">{label}</p>
+        <span className="text-muted-foreground">{icon}</span>
+      </div>
+      <p className="mt-3 text-2xl font-bold tabular-nums">{value}</p>
+      {hint ? <p className="mt-1 text-xs text-muted-foreground">{hint}</p> : null}
+    </div>
+  );
+}
+
+function EmptyState({ label }: { label: string }) {
+  return (
+    <div className="rounded-md border border-dashed bg-surface-2/50 px-4 py-8 text-center text-sm text-muted-foreground">
+      {label}
+    </div>
   );
 }
 

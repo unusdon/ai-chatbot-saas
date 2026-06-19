@@ -1,6 +1,5 @@
-import { Bot, FileText, HardDrive, MessageSquare } from 'lucide-react';
+import { Bot, FileText, HardDrive, MessageSquare, Sparkles } from 'lucide-react';
 
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
@@ -10,7 +9,7 @@ import { isBillingConfigured } from '@/lib/server/stripe';
 
 import { openCustomerPortalAction, startCheckoutAction } from './actions';
 
-export const metadata = { title: 'Usage & limits' };
+export const metadata = { title: 'Usage & billing' };
 export const dynamic = 'force-dynamic';
 
 export default async function UsagePage() {
@@ -19,17 +18,17 @@ export default async function UsagePage() {
   const limits = limitsFor(plan);
 
   return (
-    <div className="flex flex-col gap-6">
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold">Usage &amp; limits</h1>
+    <div className="space-y-8">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div className="space-y-1.5">
+          <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">Usage &amp; billing</h1>
           <p className="text-sm text-muted-foreground">
-            Your current usage against your {plan} plan caps. Resets monthly (UTC).
+            Caps reset on the 1st of each month (UTC). Server-side enforced.
           </p>
         </div>
-        <Badge variant={plan === 'free' ? 'secondary' : 'success'} className="capitalize">
-          {plan} plan
-        </Badge>
+        <span className="inline-flex items-center gap-2 self-start rounded-full border bg-card px-3 py-1 text-xs font-medium uppercase tracking-wider text-muted-foreground shadow-soft">
+          <Sparkles className="h-3 w-3" /> {plan} plan
+        </span>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
@@ -74,14 +73,11 @@ function BillingCard({ currentPlan }: { currentPlan: Plan }) {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Upgrade plan</CardTitle>
+          <CardTitle>Billing</CardTitle>
           <CardDescription>
-            Billing is not configured on this deployment. Set{' '}
-            <code className="rounded bg-muted px-1.5 py-0.5 text-xs">STRIPE_SECRET_KEY</code>,{' '}
-            <code className="rounded bg-muted px-1.5 py-0.5 text-xs">STRIPE_WEBHOOK_SECRET</code>,{' '}
-            <code className="rounded bg-muted px-1.5 py-0.5 text-xs">STRIPE_PRICE_STARTER</code>{' '}
-            and <code className="rounded bg-muted px-1.5 py-0.5 text-xs">STRIPE_PRICE_PRO</code> to
-            enable checkout.
+            Billing is not configured on this deployment. Set the four{' '}
+            <code className="rounded bg-muted px-1 py-0.5 font-mono text-xs">STRIPE_*</code>{' '}
+            env vars to enable checkout. See DEPLOY.md §7.
           </CardDescription>
         </CardHeader>
       </Card>
@@ -93,11 +89,11 @@ function BillingCard({ currentPlan }: { currentPlan: Plan }) {
         <CardTitle>Plan &amp; billing</CardTitle>
         <CardDescription>
           {currentPlan === 'free'
-            ? "You're on the free plan. Upgrade for higher caps and faster support."
+            ? "You're on the free plan. Upgrade for higher caps."
             : 'Manage your subscription in the Stripe customer portal.'}
         </CardDescription>
       </CardHeader>
-      <CardContent className="flex flex-col gap-4">
+      <CardContent className="space-y-5">
         {currentPlan !== 'free' ? (
           <form action={openCustomerPortalAction}>
             <Button type="submit" variant="outline">
@@ -105,16 +101,16 @@ function BillingCard({ currentPlan }: { currentPlan: Plan }) {
             </Button>
           </form>
         ) : null}
-        <div className="grid gap-3 sm:grid-cols-2">
+        <div className="grid gap-4 sm:grid-cols-2">
           <PlanOption
             plan="starter"
             currentPlan={currentPlan}
-            tagline="20 bots · 500 docs · 5k messages/mo"
+            tagline="20 bots · 500 docs · 5k msgs/mo"
           />
           <PlanOption
             plan="pro"
             currentPlan={currentPlan}
-            tagline="200 bots · 5k docs · 50k messages/mo"
+            tagline="200 bots · 5k docs · 50k msgs/mo"
           />
         </div>
       </CardContent>
@@ -134,19 +130,35 @@ function PlanOption({
   const limits = PLAN_LIMITS[plan];
   const isCurrent = currentPlan === plan;
   return (
-    <div className="flex flex-col rounded-md border p-4">
+    <div className={`flex flex-col rounded-lg border bg-card p-5 shadow-soft ${plan === 'pro' ? 'border-brand/40' : ''}`}>
       <div className="flex items-center justify-between">
         <h3 className="font-semibold capitalize">{plan}</h3>
-        {isCurrent ? <Badge variant="success">Current</Badge> : null}
+        {plan === 'pro' ? (
+          <span className="rounded-full border border-brand/40 bg-brand/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-brand">
+            Recommended
+          </span>
+        ) : null}
+        {isCurrent ? (
+          <span className="rounded-full bg-emerald-500/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-emerald-700 dark:text-emerald-300">
+            Current
+          </span>
+        ) : null}
       </div>
       <p className="mt-1 text-xs text-muted-foreground">{tagline}</p>
-      <p className="mt-2 text-xs text-muted-foreground">
-        {limits.bots.toLocaleString()} bots ·{' '}
-        {(limits.documentBytes / (1024 * 1024 * 1024)).toFixed(0)} GB storage
-      </p>
-      <form action={startCheckoutAction} className="mt-3">
+      <ul className="mt-4 space-y-1.5 text-xs text-muted-foreground">
+        <li>· {limits.bots.toLocaleString()} chatbots</li>
+        <li>· {limits.documents.toLocaleString()} documents</li>
+        <li>· {(limits.documentBytes / (1024 * 1024 * 1024)).toFixed(0)} GB storage</li>
+        <li>· {limits.messagesPerMonth.toLocaleString()} messages/month</li>
+      </ul>
+      <form action={startCheckoutAction} className="mt-5">
         <input type="hidden" name="plan" value={plan} />
-        <Button type="submit" disabled={isCurrent} className="w-full">
+        <Button
+          type="submit"
+          disabled={isCurrent}
+          variant={plan === 'pro' ? 'brand' : 'default'}
+          className="w-full"
+        >
           {isCurrent ? 'Current plan' : `Upgrade to ${plan}`}
         </Button>
       </form>
@@ -170,19 +182,22 @@ function UsageCard({
   const pct = Math.min(100, Math.round((used / Math.max(cap, 1)) * 100));
   const variant: 'default' | 'warning' | 'destructive' = pct >= 100 ? 'destructive' : pct >= 80 ? 'warning' : 'default';
   return (
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-sm font-medium text-muted-foreground">{label}</CardTitle>
-        <div className="text-muted-foreground">{icon}</div>
-      </CardHeader>
-      <CardContent className="flex flex-col gap-2">
-        <div className="flex items-baseline justify-between">
-          <span className="text-2xl font-bold">{format(used)}</span>
-          <span className="text-sm text-muted-foreground">of {format(cap)}</span>
-        </div>
-        <Progress value={pct} variant={variant} />
-      </CardContent>
-    </Card>
+    <div className="rounded-lg border bg-card p-5 shadow-soft">
+      <div className="flex items-center justify-between">
+        <p className="text-xs font-medium text-muted-foreground">{label}</p>
+        <span className="text-muted-foreground">{icon}</span>
+      </div>
+      <div className="mt-3 flex items-baseline justify-between gap-2">
+        <span className="text-2xl font-bold tabular-nums">{format(used)}</span>
+        <span className="text-xs text-muted-foreground">of {format(cap)}</span>
+      </div>
+      <Progress value={pct} variant={variant} className="mt-3" />
+      {pct >= 80 ? (
+        <p className={`mt-2 text-xs ${pct >= 100 ? 'text-destructive' : 'text-amber-600 dark:text-amber-400'}`}>
+          {pct >= 100 ? 'Cap reached.' : 'Near the cap.'} Upgrade to keep adding.
+        </p>
+      ) : null}
+    </div>
   );
 }
 

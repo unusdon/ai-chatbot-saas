@@ -3,8 +3,8 @@ import type { Document } from '@/db/schema';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
 import { DocumentList } from './document-list';
-import { UrlIngestForm } from './url-ingest-form';
 import { PdfUploadForm } from './pdf-upload-form';
+import { UrlIngestForm } from './url-ingest-form';
 
 export function DocumentsCard({ botId, documents }: { botId: string; documents: Document[] }) {
   return (
@@ -12,17 +12,22 @@ export function DocumentsCard({ botId, documents }: { botId: string; documents: 
       <CardHeader>
         <CardTitle>Sources</CardTitle>
         <CardDescription>
-          Upload PDFs and add URLs the bot can answer questions from. New sources are queued for
-          ingestion (chunking + embedding ships in M2C).
+          Upload PDFs or paste URLs. The worker chunks + embeds them in the background. Status flips
+          to <span className="font-mono text-xs">Ready</span> when it&apos;s indexable.
         </CardDescription>
       </CardHeader>
-      <CardContent className="flex flex-col gap-6">
-        <div className="grid gap-4 sm:grid-cols-2">
+      <CardContent className="space-y-6">
+        <div className="grid gap-3 sm:grid-cols-2">
           <PdfUploadForm botId={botId} />
           <UrlIngestForm botId={botId} />
         </div>
         <div>
-          <h3 className="mb-2 text-sm font-semibold">Sources ({documents.length})</h3>
+          <div className="mb-2 flex items-center justify-between">
+            <h3 className="text-sm font-semibold">Sources</h3>
+            <span className="rounded-full border bg-card px-2 py-0.5 text-xs tabular-nums text-muted-foreground">
+              {documents.length}
+            </span>
+          </div>
           <DocumentList documents={documents} />
         </div>
       </CardContent>

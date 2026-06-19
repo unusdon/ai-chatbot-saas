@@ -4,54 +4,65 @@ import { FileText, Globe, Trash2 } from 'lucide-react';
 
 import type { Document } from '@/db/schema';
 
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 
 import { deleteDocumentAction } from './documents/actions';
 
-const STATUS_LABEL: Record<string, { label: string; variant: 'success' | 'secondary' | 'warning' | 'destructive' }> = {
-  pending: { label: 'Pending', variant: 'secondary' },
-  processing: { label: 'Processing', variant: 'warning' },
-  ready: { label: 'Ready', variant: 'success' },
-  failed: { label: 'Failed', variant: 'destructive' },
+const STATUS_STYLES: Record<string, string> = {
+  pending: 'bg-muted text-muted-foreground',
+  processing: 'bg-amber-500/10 text-amber-700 dark:text-amber-300',
+  ready: 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300',
+  failed: 'bg-destructive/10 text-destructive',
+};
+
+const STATUS_LABEL: Record<string, string> = {
+  pending: 'Pending',
+  processing: 'Processing',
+  ready: 'Ready',
+  failed: 'Failed',
 };
 
 export function DocumentList({ documents }: { documents: Document[] }) {
   if (documents.length === 0) {
     return (
-      <p className="rounded-md border border-dashed bg-muted/30 px-4 py-6 text-center text-sm text-muted-foreground">
-        No sources yet. Upload a PDF or add a URL to get started.
-      </p>
+      <div className="rounded-md border border-dashed bg-surface-2/50 px-4 py-8 text-center text-sm text-muted-foreground">
+        No sources yet. Upload a PDF or add a URL above to get started.
+      </div>
     );
   }
 
   return (
-    <ul className="divide-y rounded-md border">
+    <ul className="divide-y rounded-md border bg-card">
       {documents.map((doc) => (
         <li key={doc.id} className="flex items-center gap-3 px-4 py-3">
-          <Icon source={doc.source} />
+          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-secondary text-muted-foreground">
+            {doc.source === 'url' ? <Globe className="h-4 w-4" /> : <FileText className="h-4 w-4" />}
+          </span>
           <div className="min-w-0 flex-1">
-            <div className="truncate text-sm font-medium">{doc.title}</div>
-            <div className="truncate text-xs text-muted-foreground">
+            <p className="truncate text-sm font-medium">{doc.title}</p>
+            <p className="truncate text-xs text-muted-foreground">
               {doc.source === 'url' ? doc.sourceUrl : formatBytes(doc.bytes)} ·{' '}
               {doc.chunkCount} {doc.chunkCount === 1 ? 'chunk' : 'chunks'} ·{' '}
               {doc.createdAt.toLocaleDateString()}
-            </div>
+            </p>
             {doc.status === 'failed' && doc.error ? (
-              <p className="mt-1 text-xs text-destructive">{doc.error}</p>
+              <p className="mt-1 truncate text-xs text-destructive">{doc.error}</p>
             ) : null}
           </div>
-          <Badge variant={STATUS_LABEL[doc.status]?.variant ?? 'secondary'}>
-            {STATUS_LABEL[doc.status]?.label ?? doc.status}
-          </Badge>
+          <span
+            className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider ${STATUS_STYLES[doc.status] ?? STATUS_STYLES.pending}`}
+          >
+            {STATUS_LABEL[doc.status] ?? doc.status}
+          </span>
           <form action={deleteDocumentAction}>
             <input type="hidden" name="documentId" value={doc.id} />
             <Button
               type="submit"
               variant="ghost"
-              size="icon"
+              size="icon-sm"
               title="Delete source"
               aria-label="Delete source"
+              className="text-muted-foreground hover:text-destructive"
             >
               <Trash2 className="h-4 w-4" />
             </Button>
@@ -60,11 +71,6 @@ export function DocumentList({ documents }: { documents: Document[] }) {
       ))}
     </ul>
   );
-}
-
-function Icon({ source }: { source: string }) {
-  if (source === 'url') return <Globe className="h-5 w-5 shrink-0 text-muted-foreground" />;
-  return <FileText className="h-5 w-5 shrink-0 text-muted-foreground" />;
 }
 
 function formatBytes(bytes: number | null | undefined) {

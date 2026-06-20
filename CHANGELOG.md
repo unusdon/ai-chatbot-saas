@@ -6,6 +6,15 @@ All notable changes to this project are documented in this file. Format follows
 
 ## [Unreleased]
 
+_No unreleased changes yet._
+
+## [1.0.0] - 2026-06-20
+
+First public release. Multi-tenant RAG chatbot platform with 5 LLM providers,
+3 channels (web embed widget, Telegram private + groups, WhatsApp Cloud API),
+9 source types, Stripe billing, plans + usage limits, conversation admin with
+promote-to-training feedback loop, and full SEO surface.
+
 ### Added
 - **Phase 2 / Milestone 7 — Stripe billing skeleton.**
     - Schema: `stripeCustomerId`, `stripeSubscriptionId`, `stripeSubscriptionStatus`

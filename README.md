@@ -4,6 +4,8 @@
 
 ### Open-source multi-tenant RAG chatbot platform — train AI on your content, deploy across web + Telegram + WhatsApp
 
+[![Latest release](https://img.shields.io/github/v/release/unusdon/ai-chatbot-saas?display_name=tag&sort=semver&logo=github&color=2563EB&style=flat-square)](https://github.com/unusdon/ai-chatbot-saas/releases/latest)
+[![Release date](https://img.shields.io/github/release-date/unusdon/ai-chatbot-saas?style=flat-square&color=8B5CF6)](https://github.com/unusdon/ai-chatbot-saas/releases/latest)
 [![CI](https://img.shields.io/github/actions/workflow/status/unusdon/ai-chatbot-saas/ci.yml?branch=main&label=CI&logo=github&style=flat-square)](https://github.com/unusdon/ai-chatbot-saas/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg?style=flat-square)](LICENSE)
 [![GitHub stars](https://img.shields.io/github/stars/unusdon/ai-chatbot-saas?style=flat-square&logo=github&color=yellow)](https://github.com/unusdon/ai-chatbot-saas/stargazers)

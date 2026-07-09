@@ -47,7 +47,7 @@
 
 <br/>
 
-[**Live demo**](https://chat.cyberunite.com) · [**Documentation**](DEPLOY.md) · [**Report a bug**](https://github.com/unusdon/ai-chatbot-saas/issues/new?template=bug_report.yml) · [**Request a feature**](https://github.com/unusdon/ai-chatbot-saas/issues/new?template=feature_request.yml) · [**Discussions**](https://github.com/unusdon/ai-chatbot-saas/discussions)
+[**Documentation**](DEPLOY.md) · [**Report a bug**](https://github.com/unusdon/ai-chatbot-saas/issues/new?template=bug_report.yml) · [**Request a feature**](https://github.com/unusdon/ai-chatbot-saas/issues/new?template=feature_request.yml) · [**Discussions**](https://github.com/unusdon/ai-chatbot-saas/discussions)
 
 </div>
 
@@ -55,29 +55,6 @@
 
 > **The shortest path from "we have docs" to "we have an AI support bot on every channel."**
 > Sign up → upload PDFs/URLs → embed the widget on your site OR add a Telegram/WhatsApp bot → done.
-
-<div align="center">
-  <br/>
-  <em>📸 Demo screenshots — drop in your own once deployed</em>
-  <br/><br/>
-  <table>
-    <tr>
-      <td align="center" width="33%">
-        <strong>Marketing landing</strong><br/>
-        <sub>SEO-tuned, JSON-LD, OG image, light/dark, mobile-first</sub>
-      </td>
-      <td align="center" width="33%">
-        <strong>Dashboard</strong><br/>
-        <sub>Sidebar nav, bot list, sources, analytics, conversations, channels</sub>
-      </td>
-      <td align="center" width="33%">
-        <strong>Embed widget</strong><br/>
-        <sub>Shadow DOM, streaming SSE, citation chips, 3.2 KB gzipped</sub>
-      </td>
-    </tr>
-  </table>
-  <br/>
-</div>
 
 ---
 

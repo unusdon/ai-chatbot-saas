@@ -30,18 +30,14 @@ updates:
         update-types:
           - minor
           - patch
-    # Major bumps for these packages need a manual migration. Skip until
-    # we've planned the upgrade, then bump the floor in package.json.
+    # Block ALL major bumps by default — they need a manual migration.
+    # Cherry-pick specific packages by opening a PR yourself when the
+    # migration is planned. Groups above only cover minor/patch bumps
+    # for the packages they list, so anything outside a group (typescript,
+    # vitest, plugin-react, etc.) also needs this catch-all rule to stop
+    # dependabot from opening major-bump PRs.
     ignore:
-      - dependency-name: "next"
-        update-types: ["version-update:semver-major"]
-      - dependency-name: "react"
-        update-types: ["version-update:semver-major"]
-      - dependency-name: "react-dom"
-        update-types: ["version-update:semver-major"]
-      - dependency-name: "vite"
-        update-types: ["version-update:semver-major"]
-      - dependency-name: "dotenv"
+      - dependency-name: "*"
         update-types: ["version-update:semver-major"]
 
   - package-ecosystem: github-actions
